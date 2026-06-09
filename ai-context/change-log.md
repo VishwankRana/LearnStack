@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-06-10 01:55 UTC+5:30 — Phase 6: Bookmarks Module (Complete)
+
+### Files Changed
+| File | Change |
+|---|---|
+| `server/src/modules/bookmark/bookmark.service.js` | **Created** — CRUD + search, URL validation |
+| `server/src/modules/bookmark/bookmark.controller.js` | **Created** — request handlers |
+| `server/src/modules/bookmark/bookmark.routes.js` | **Created** — `/bookmarks` router |
+| `server/src/routes/index.js` | **Modified** — registered `/bookmarks` |
+| `src/features/bookmarks/api/bookmarksApi.js` | **Created** |
+| `src/features/bookmarks/hooks/useBookmarks.js` | **Created** |
+| `src/features/bookmarks/components/BookmarkCard.jsx` | **Created** — card with Google favicon, external link |
+| `src/features/bookmarks/components/BookmarkForm.jsx` | **Created** — URL + title + description + collection |
+| `src/features/bookmarks/components/DeleteBookmarkDialog.jsx` | **Created** |
+| `src/features/bookmarks/pages/BookmarksPage.jsx` | **Created** — list page with search + filter + create/edit dialogs |
+| `src/features/bookmarks/bookmarks.css` | **Created** |
+| `src/features/collections/pages/CollectionDetailPage.jsx` | **Modified** — bookmarks section now live |
+| `src/app/router.jsx` | **Modified** — added `/app/bookmarks` |
+| `src/components/layout/AppShell.jsx` | **Modified** — added Bookmarks nav link |
+
+### Summary of Change
+Implemented the complete Bookmarks module (Phase 6). Bookmarks are managed via inline dialogs (no full-page editor needed). The `BookmarksPage` supports search across title/URL/description and collection filtering. `BookmarkCard` displays favicons via Google's favicon service, shows the domain name, links open in a new tab. The `CollectionDetailPage` bookmarks section is now live — shows up to 6 cards, "Save Bookmark" pre-assigns the collection, "Show all" links to `/app/bookmarks?collectionId=X`. All mutations invalidate both `bookmarks` and `collections` caches so stat counts stay current.
+
+### Impacted Modules
+- `server/src/modules/bookmark/` — new
+- `src/features/bookmarks/` — new feature module
+- `src/features/collections/pages/CollectionDetailPage.jsx` — bookmarks section live
+- `src/app/router.jsx` — 1 new route
+- `src/components/layout/AppShell.jsx` — nav link
+
+### Risk Level
+**Low** — new additive module. Only existing change is CollectionDetailPage (bookmarks section).
+
+---
+
 ## 2026-06-10 01:25 UTC+5:30 — Phase 5: Notes Module (Complete)
 
 ### Files Changed

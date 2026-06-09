@@ -19,7 +19,12 @@ import {
 import { useNotes, useDeleteNote } from '../../notes/hooks/useNotes';
 import { NoteCard, NoteCardSkeleton } from '../../notes/components/NoteCard';
 import { DeleteNoteDialog } from '../../notes/components/DeleteNoteDialog';
+import { useBookmarks, useCreateBookmark, useUpdateBookmark, useDeleteBookmark } from '../../bookmarks/hooks/useBookmarks';
+import { BookmarkCard, BookmarkCardSkeleton } from '../../bookmarks/components/BookmarkCard';
+import { BookmarkForm } from '../../bookmarks/components/BookmarkForm';
+import { DeleteBookmarkDialog } from '../../bookmarks/components/DeleteBookmarkDialog';
 import '../collections.css';
+import '../../bookmarks/bookmarks.css';
 
 /* ── Icons ── */
 function BackArrowIcon() {
@@ -131,6 +136,10 @@ export function CollectionDetailPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [formError, setFormError] = useState(null);
   const [noteDeleteTarget, setNoteDeleteTarget] = useState(null);
+  const [bookmarkCreateOpen, setBookmarkCreateOpen] = useState(false);
+  const [bookmarkEditTarget, setBookmarkEditTarget] = useState(null);
+  const [bookmarkDeleteTarget, setBookmarkDeleteTarget] = useState(null);
+  const [bookmarkFormError, setBookmarkFormError] = useState(null);
 
   /* — Collection — */
   const { data: collection, isLoading, isError } = useCollection(id);
@@ -140,6 +149,12 @@ export function CollectionDetailPage() {
   /* — Notes for this collection — */
   const { data: notes, isLoading: notesLoading } = useNotes({ collectionId: id });
   const deleteNoteMutation = useDeleteNote();
+
+  /* — Bookmarks for this collection — */
+  const { data: bookmarks, isLoading: bookmarksLoading } = useBookmarks({ collectionId: id });
+  const createBookmarkMutation = useCreateBookmark();
+  const updateBookmarkMutation = useUpdateBookmark();
+  const deleteBookmarkMutation = useDeleteBookmark();
 
   async function handleUpdate(values) {
     setFormError(null);
@@ -164,6 +179,25 @@ export function CollectionDetailPage() {
     try {
       await deleteNoteMutation.mutateAsync(noteDeleteTarget.id);
       setNoteDeleteTarget(null);
+    } catch {
+      // error visible via mutation state
+    }
+  }
+
+  async function handleCreateBookmark(values) {
+    setBookmarkFormError(null);
+    try {
+      await createBookmarkMutation.mutateAsync({ ...values, collectionId: id });
+      setBookmarkCreateOpen(false);
+    } catch (err) {
+      setBookmarkFormError(err.message ?? 'Failed to save bookmark.');
+    }
+  }
+
+  async function handleDeleteBookmark() {
+    try {
+      await deleteBookmarkMutation.mutateAsync(bookmarkDeleteTarget.id);
+      setBookmarkDeleteTarget(null);
     } catch {
       // error visible via mutation state
     }
@@ -200,10 +234,14 @@ export function CollectionDetailPage() {
   }
 
   const counts = collection._count ?? {};
+
   const noteCount = notes?.length ?? counts.notes ?? 0;
-  // Show at most 6 notes inline; user can see all via the link
   const visibleNotes = notes?.slice(0, 6) ?? [];
   const hasMoreNotes = noteCount > 6;
+
+  const bookmarkCount = bookmarks?.length ?? counts.bookmarks ?? 0;
+  const visibleBookmarks = bookmarks?.slice(0, 6) ?? [];
+  const hasMoreBookmarks = bookmarkCount > 6;
 
   return (
     <section className="collection-detail">
@@ -360,8 +398,84 @@ export function CollectionDetailPage() {
       {/* ── Documents (coming soon) ── */}
       <ComingSoonSection icon={<DocIcon />} label="Documents" count={counts.documents ?? 0} />
 
-      {/* ── Bookmarks (coming soon) ── */}
-      <ComingSoonSection icon={<BookmarkIcon />} label="Bookmarks" count={counts.bookmarks ?? 0} />
+      {/* ── Bookmarks Section ── */}
+      <div className="collection-detail__content">
+        <div className="collection-detail__section-header">
+          <div className="collection-detail__section-title-group">
+            <span className="collection-detail__section-title">Bookmarks</span>
+            {bookmarkCount > 0 && (
+              <span className="collection-detail__section-badge">{bookmarkCount}</span>
+            )}
+          </div>
+          <div className="collection-detail__section-actions">
+            {bookmarkCount > 0 && (
+              <Link
+                to={`/app/bookmarks?collectionId=${id}`}
+                className="collection-detail__view-all"
+              >
+                Show all bookmarks
+                <ArrowRightIcon />
+              </Link>
+            )}
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => { setBookmarkFormError(null); setBookmarkCreateOpen(true); }}
+            >
+              <PlusIcon />
+              Save Bookmark
+            </Button>
+          </div>
+        </div>
+
+        {bookmarksLoading ? (
+          <div className="bookmarks-grid">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <BookmarkCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : visibleBookmarks.length > 0 ? (
+          <>
+            <div className="bookmarks-grid">
+              {visibleBookmarks.map((bookmark) => (
+                <BookmarkCard
+                  key={bookmark.id}
+                  bookmark={bookmark}
+                  onEdit={setBookmarkEditTarget}
+                  onDelete={setBookmarkDeleteTarget}
+                />
+              ))}
+            </div>
+            {hasMoreBookmarks && (
+              <div className="collection-detail__show-more">
+                <Link
+                  to={`/app/bookmarks?collectionId=${id}`}
+                  className="collection-detail__view-all"
+                >
+                  Show all {bookmarkCount} bookmarks
+                  <ArrowRightIcon />
+                </Link>
+              </div>
+            )}
+          </>
+        ) : (
+          <EmptyState
+            icon={<BookmarkIcon />}
+            title="No bookmarks yet"
+            description="Save links, articles, and resources to this collection."
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => { setBookmarkFormError(null); setBookmarkCreateOpen(true); }}
+              >
+                <PlusIcon />
+                Save Bookmark
+              </Button>
+            }
+          />
+        )}
+      </div>
 
       {/* — Edit Collection Dialog — */}
       <Dialog open={editOpen} onClose={() => setEditOpen(false)}>
@@ -409,6 +523,80 @@ export function CollectionDetailPage() {
         note={noteDeleteTarget}
         onConfirm={handleDeleteNote}
         isDeleting={deleteNoteMutation.isPending}
+      />
+
+      {/* — Save Bookmark Dialog — */}
+      <Dialog open={bookmarkCreateOpen} onClose={() => setBookmarkCreateOpen(false)}>
+        <DialogHeader
+          title="Save Bookmark"
+          description={`This bookmark will be added to "${collection.name}".`}
+          onClose={() => setBookmarkCreateOpen(false)}
+        />
+        <DialogBody>
+          {bookmarkFormError && (
+            <p className="delete-dialog__warning" style={{ marginBottom: 12 }}>{bookmarkFormError}</p>
+          )}
+          <BookmarkForm
+            formId="collection-create-bookmark-form"
+            onSubmit={handleCreateBookmark}
+            isSubmitting={createBookmarkMutation.isPending}
+          />
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="secondary" size="sm" onClick={() => setBookmarkCreateOpen(false)} disabled={createBookmarkMutation.isPending}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" type="submit" form="collection-create-bookmark-form" isLoading={createBookmarkMutation.isPending}>
+            Save Bookmark
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* — Edit Bookmark Dialog — */}
+      <Dialog open={!!bookmarkEditTarget} onClose={() => setBookmarkEditTarget(null)}>
+        <DialogHeader
+          title="Edit Bookmark"
+          description="Update the title, URL, or description."
+          onClose={() => setBookmarkEditTarget(null)}
+        />
+        <DialogBody>
+          {bookmarkFormError && (
+            <p className="delete-dialog__warning" style={{ marginBottom: 12 }}>{bookmarkFormError}</p>
+          )}
+          {bookmarkEditTarget && (
+            <BookmarkForm
+              formId="collection-edit-bookmark-form"
+              defaultValues={bookmarkEditTarget}
+              onSubmit={async (values) => {
+                setBookmarkFormError(null);
+                try {
+                  await updateBookmarkMutation.mutateAsync({ id: bookmarkEditTarget.id, data: values });
+                  setBookmarkEditTarget(null);
+                } catch (err) {
+                  setBookmarkFormError(err.message ?? 'Failed to update bookmark.');
+                }
+              }}
+              isSubmitting={updateBookmarkMutation.isPending}
+            />
+          )}
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="secondary" size="sm" onClick={() => setBookmarkEditTarget(null)} disabled={updateBookmarkMutation.isPending}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" type="submit" form="collection-edit-bookmark-form" isLoading={updateBookmarkMutation.isPending}>
+            Save Changes
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* — Delete Bookmark Dialog — */}
+      <DeleteBookmarkDialog
+        open={!!bookmarkDeleteTarget}
+        onClose={() => setBookmarkDeleteTarget(null)}
+        bookmark={bookmarkDeleteTarget}
+        onConfirm={handleDeleteBookmark}
+        isDeleting={deleteBookmarkMutation.isPending}
       />
     </section>
   );

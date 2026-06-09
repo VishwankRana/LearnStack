@@ -9,6 +9,7 @@ import { CollectionsPage } from '../features/collections/pages/CollectionsPage'
 import { CollectionDetailPage } from '../features/collections/pages/CollectionDetailPage'
 import { NotesPage } from '../features/notes/pages/NotesPage'
 import { NoteEditorPage } from '../features/notes/pages/NoteEditorPage'
+import { BookmarksPage } from '../features/bookmarks/pages/BookmarksPage'
 
 export const router = createBrowserRouter([
   {
@@ -53,6 +54,10 @@ export const router = createBrowserRouter([
           {
             path: 'app/notes/:id',
             element: <NoteEditorPage />,
+          },
+          {
+            path: 'app/bookmarks',
+            element: <BookmarksPage />,
           },
         ],
       },
