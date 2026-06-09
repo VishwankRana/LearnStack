@@ -1,0 +1,29 @@
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api/v1'
+
+export async function apiRequest(path, options = {}) {
+  const { token, headers, body, ...restOptions } = options
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...restOptions,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...headers,
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  })
+
+  const payload = await response.json().catch(() => ({
+    success: false,
+    error: {
+      message: 'The server returned an unreadable response.',
+    },
+  }))
+
+  if (!response.ok) {
+    throw new Error(payload.error?.message ?? 'Request failed.')
+  }
+
+  return payload.data
+}

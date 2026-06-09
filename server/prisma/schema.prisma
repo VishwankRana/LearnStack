@@ -3,6 +3,101 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String
+  email       String       @unique
+  password    String
+  avatar      String?
+  bio         String?
+  collections Collection[]
+  notes       Note[]
+  bookmarks   Bookmark[]
+  documents   Document[]
+  activities  Activity[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Collection {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  color       String?    @default("#6366f1")
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  notes       Note[]
+  bookmarks   Bookmark[]
+  documents   Document[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model Note {
+  id           String      @id @default(cuid())
+  title        String
+  content      String
+  summary      String?
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([collectionId])
+}
+
+model Document {
+  id           String      @id @default(cuid())
+  title        String
+  fileUrl      String
+  summary      String?
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([collectionId])
+}
+
+model Bookmark {
+  id           String      @id @default(cuid())
+  title        String
+  url          String
+  description  String?
+  summary      String?
+  userId       String
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId String?
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([collectionId])
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  type        String   @db.VarChar(50)
+  title       String
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
 }

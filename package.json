@@ -7,8 +7,8 @@
     "dev": "vite",
     "server:dev": "nodemon server/src/server.js",
     "server:start": "node server/src/server.js",
-    "prisma:generate": "prisma generate --schema server/prisma/schema.prisma",
-    "prisma:migrate:dev": "prisma migrate dev --schema server/prisma/schema.prisma",
+    "prisma:generate": "node scripts/prisma-generate.mjs",
+    "prisma:migrate:dev": "node scripts/prisma-migrate-dev.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -26,7 +26,9 @@
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-hook-form": "^7.58.1",
-    "react-router-dom": "^7.6.2"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.6.2",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

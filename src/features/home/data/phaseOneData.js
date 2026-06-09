@@ -1,18 +1,18 @@
 export const setupChecklist = [
   {
-    title: 'Routing and providers',
+    title: 'Routing, providers, and auth state',
     description:
-      'Browser router, shared layout, and TanStack Query are wired at the application boundary.',
+      'Browser router, shared layout, TanStack Query, and auth context are wired at the application boundary.',
   },
   {
-    title: 'Backend layering',
+    title: 'Protected navigation',
     description:
-      'Controllers, services, routes, middleware, and config modules are separated for Phase 2 growth.',
+      'A protected route wrapper prevents unauthenticated access to the app workspace and redirects to login.',
   },
   {
-    title: 'Prisma and Supabase',
+    title: 'Backend authentication module',
     description:
-      'A PostgreSQL datasource and generated Prisma client are configured for future domain models.',
+      'Controllers, services, routes, JWT helpers, and authentication middleware are separated for maintainable auth flows.',
   },
 ]
 
@@ -21,19 +21,19 @@ export const stackSections = [
     label: 'Frontend',
     value: 'React + Vite',
     description:
-      'Feature-based folders, shared UI building blocks, route-level composition, and query-ready data flow.',
+      'Feature-based folders, auth pages, shared UI building blocks, and protected route composition.',
   },
   {
     label: 'Backend',
     value: 'Express API',
     description:
-      'Versioned REST routes, central error middleware, request logging, and environment validation.',
+      'Versioned auth routes, request context, error middleware, and JWT verification for protected requests.',
   },
   {
     label: 'Data',
     value: 'Prisma ORM',
     description:
-      'Schema-first database modeling with a clean place for migrations, seeds, and generated access.',
+      'Schema-first user modeling with unique emails, hashed passwords, and generated access through Prisma Client.',
   },
   {
     label: 'Scale Path',
@@ -45,16 +45,28 @@ export const stackSections = [
 
 export const apiFoundations = [
   {
-    method: 'GET',
-    title: '/api/v1/health',
+    method: 'POST',
+    title: '/api/v1/auth/register',
     description:
-      'Confirms API readiness, environment mode, and server uptime for local and hosted deployments.',
+      'Creates a new user, hashes the password, and returns a JWT plus a safe user payload.',
+  },
+  {
+    method: 'POST',
+    title: '/api/v1/auth/login',
+    description:
+      'Validates credentials and returns a fresh JWT for the matching account.',
   },
   {
     method: 'GET',
-    title: '/api/v1/system/manifest',
+    title: '/api/v1/auth/me',
     description:
-      'Returns the current backend feature map so the frontend can introspect the scaffold during setup.',
+      'Reads the current signed-in user from a Bearer token and powers session restoration on the client.',
+  },
+  {
+    method: 'POST',
+    title: '/api/v1/auth/logout',
+    description:
+      'Acknowledges client-side logout so the frontend can clear its stored token consistently.',
   },
 ]
 
@@ -62,34 +74,34 @@ export const architectureTokens = [
   {
     title: 'Feature-first UI',
     description:
-      'Pages stay close to feature data and future forms, while reusable layout and UI elements remain shared.',
+      'Pages stay close to feature forms and auth calls, while reusable layout and UI elements remain shared.',
   },
   {
     title: 'Service isolation',
     description:
-      'Controllers stay thin and delegate behavior to service modules, keeping business logic testable.',
+      'Controllers stay thin and delegate register/login behavior to a dedicated auth service, keeping business logic testable.',
   },
   {
     title: 'Operational defaults',
     description:
-      'Security headers, CORS, JSON parsing, request IDs, and error serialization are in place from the start.',
+      'Security headers, CORS, JSON parsing, request IDs, error serialization, and token verification remain centralized.',
   },
 ]
 
 export const roadmapItems = [
   {
-    title: 'Phase 2 authentication',
-    description:
-      'User model, JWT flows, password hashing, and protected application sections plug into the new scaffold.',
-  },
-  {
     title: 'Phase 3 dashboard',
     description:
-      'Statistics and activity views can consume shared query utilities and backend route namespaces.',
+      'Statistics, recent activity, and recent content can now rely on authenticated user identity.',
   },
   {
-    title: 'Knowledge modules',
+    title: 'Content ownership',
     description:
-      'Collections, notes, bookmarks, and documents can each add isolated routes, services, validators, and pages.',
+      'Collections, notes, bookmarks, and documents can safely attach records to a signed-in user.',
+  },
+  {
+    title: 'AI personalization',
+    description:
+      'Later AI summaries, search, and recommendations can scope results to the authenticated account context.',
   },
 ]

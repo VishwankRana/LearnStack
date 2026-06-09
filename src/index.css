@@ -5,8 +5,8 @@
   --color-text-secondary: #475569;
   --color-text-muted: #64748b;
   --color-border: rgba(15, 23, 42, 0.08);
-  --font-body: 'Segoe UI', 'Inter', sans-serif;
-  --font-heading: 'Trebuchet MS', 'Avenir Next', sans-serif;
+  --font-body: 'Inter', -apple-system, 'Segoe UI', sans-serif;
+  --font-heading: 'Inter', -apple-system, 'Segoe UI', sans-serif;
   font-family: var(--font-body);
   line-height: 1.5;
   font-weight: 400;

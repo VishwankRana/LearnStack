@@ -9,7 +9,7 @@ export const systemService = {
       modules: [
         'health',
         'system',
-        'authentication (planned)',
+        'authentication',
         'collections (planned)',
         'notes (planned)',
         'bookmarks (planned)',
@@ -17,7 +17,7 @@ export const systemService = {
       ],
       integrations: {
         database: 'Prisma + PostgreSQL',
-        auth: 'JWT + bcrypt (phase 2)',
+        auth: 'JWT + bcrypt',
         storage: 'Supabase Storage (phase 7)',
         ai: 'OpenRouter (phase 8)',
         vectorSearch: 'pgvector (phase 9)',

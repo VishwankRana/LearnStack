@@ -27,6 +27,7 @@ export const env = {
     'postgresql://postgres:postgres@localhost:5432/mindvault',
   ),
   JWT_SECRET: process.env.JWT_SECRET ?? 'phase-2-secret',
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? '7d',
   OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY ?? '',
   SUPABASE_URL: process.env.SUPABASE_URL ?? '',
   SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY ?? '',
