@@ -23,8 +23,13 @@ import { useBookmarks, useCreateBookmark, useUpdateBookmark, useDeleteBookmark }
 import { BookmarkCard, BookmarkCardSkeleton } from '../../bookmarks/components/BookmarkCard';
 import { BookmarkForm } from '../../bookmarks/components/BookmarkForm';
 import { DeleteBookmarkDialog } from '../../bookmarks/components/DeleteBookmarkDialog';
+import { useDocuments, useUploadDocument, useDeleteDocument } from '../../documents/hooks/useDocuments';
+import { DocumentCard, DocumentCardSkeleton } from '../../documents/components/DocumentCard';
+import { DocumentUploadForm } from '../../documents/components/DocumentUploadForm';
+import { DeleteDocumentDialog } from '../../documents/components/DeleteDocumentDialog';
 import '../collections.css';
 import '../../bookmarks/bookmarks.css';
+import '../../documents/documents.css';
 
 /* ── Icons ── */
 function BackArrowIcon() {
@@ -140,6 +145,9 @@ export function CollectionDetailPage() {
   const [bookmarkEditTarget, setBookmarkEditTarget] = useState(null);
   const [bookmarkDeleteTarget, setBookmarkDeleteTarget] = useState(null);
   const [bookmarkFormError, setBookmarkFormError] = useState(null);
+  const [docUploadOpen, setDocUploadOpen] = useState(false);
+  const [docDeleteTarget, setDocDeleteTarget] = useState(null);
+  const [docFormError, setDocFormError] = useState(null);
 
   /* — Collection — */
   const { data: collection, isLoading, isError } = useCollection(id);
@@ -155,6 +163,11 @@ export function CollectionDetailPage() {
   const createBookmarkMutation = useCreateBookmark();
   const updateBookmarkMutation = useUpdateBookmark();
   const deleteBookmarkMutation = useDeleteBookmark();
+
+  /* — Documents for this collection — */
+  const { data: documents, isLoading: docsLoading } = useDocuments({ collectionId: id });
+  const uploadDocMutation = useUploadDocument();
+  const deleteDocMutation = useDeleteDocument();
 
   async function handleUpdate(values) {
     setFormError(null);
@@ -203,6 +216,25 @@ export function CollectionDetailPage() {
     }
   }
 
+  async function handleUploadDocument(formData) {
+    setDocFormError(null);
+    try {
+      await uploadDocMutation.mutateAsync(formData);
+      setDocUploadOpen(false);
+    } catch (err) {
+      setDocFormError(err.message ?? 'Upload failed.');
+    }
+  }
+
+  async function handleDeleteDocument() {
+    try {
+      await deleteDocMutation.mutateAsync(docDeleteTarget.id);
+      setDocDeleteTarget(null);
+    } catch {
+      // error visible via mutation state
+    }
+  }
+
   /* — Loading / Error states — */
   if (isLoading) {
     return (
@@ -242,6 +274,10 @@ export function CollectionDetailPage() {
   const bookmarkCount = bookmarks?.length ?? counts.bookmarks ?? 0;
   const visibleBookmarks = bookmarks?.slice(0, 6) ?? [];
   const hasMoreBookmarks = bookmarkCount > 6;
+
+  const docCount = documents?.length ?? counts.documents ?? 0;
+  const visibleDocs = documents?.slice(0, 6) ?? [];
+  const hasMoreDocs = docCount > 6;
 
   return (
     <section className="collection-detail">
@@ -395,8 +431,84 @@ export function CollectionDetailPage() {
         )}
       </div>
 
-      {/* ── Documents (coming soon) ── */}
-      <ComingSoonSection icon={<DocIcon />} label="Documents" count={counts.documents ?? 0} />
+      {/* ── Documents Section ── */}
+      <div className="collection-detail__content">
+        <div className="collection-detail__section-header">
+          <div className="collection-detail__section-title-group">
+            <span className="collection-detail__section-title">Documents</span>
+            {docCount > 0 && (
+              <span className="collection-detail__section-badge">{docCount}</span>
+            )}
+          </div>
+          <div className="collection-detail__section-actions">
+            {docCount > 0 && (
+              <Link
+                to={`/app/documents?collectionId=${id}`}
+                className="collection-detail__view-all"
+              >
+                Show all documents
+                <ArrowRightIcon />
+              </Link>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => { setDocFormError(null); setDocUploadOpen(true); }}
+            >
+              <PlusIcon />
+              Upload Document
+            </Button>
+          </div>
+        </div>
+
+        {docsLoading ? (
+          <div className="documents-grid">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <DocumentCardSkeleton key={i} />
+            ))}
+          </div>
+        ) : visibleDocs.length > 0 ? (
+          <>
+            <div className="documents-grid">
+              {visibleDocs.map((doc) => (
+                <DocumentCard
+                  key={doc.id}
+                  document={doc}
+                  onEdit={() => navigate(`/app/documents/${doc.id}`)}
+                  onDelete={setDocDeleteTarget}
+                />
+              ))}
+            </div>
+            {hasMoreDocs && (
+              <div className="collection-detail__show-more">
+                <Link
+                  to={`/app/documents?collectionId=${id}`}
+                  className="collection-detail__view-all"
+                >
+                  Show all {docCount} documents
+                  <ArrowRightIcon />
+                </Link>
+              </div>
+            )}
+          </>
+        ) : (
+          <EmptyState
+            icon={<DocIcon />}
+            title="No documents yet"
+            description="Upload PDFs, Word docs, and text files to this collection."
+            action={
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => { setDocFormError(null); setDocUploadOpen(true); }}
+              >
+                <PlusIcon />
+                Upload Document
+              </Button>
+            }
+          />
+        )}
+      </div>
 
       {/* ── Bookmarks Section ── */}
       <div className="collection-detail__content">
@@ -597,6 +709,44 @@ export function CollectionDetailPage() {
         bookmark={bookmarkDeleteTarget}
         onConfirm={handleDeleteBookmark}
         isDeleting={deleteBookmarkMutation.isPending}
+      />
+
+      {/* — Upload Document Dialog — */}
+      <Dialog open={docUploadOpen} onClose={() => setDocUploadOpen(false)}>
+        <DialogHeader
+          title="Upload Document"
+          description={`This document will be added to "${collection.name}".`}
+          onClose={() => setDocUploadOpen(false)}
+        />
+        <DialogBody>
+          {docFormError && (
+            <p className="delete-dialog__warning" style={{ marginBottom: 12 }}>{docFormError}</p>
+          )}
+          <DocumentUploadForm
+            formId="collection-upload-doc-form"
+            onSubmit={handleUploadDocument}
+            isSubmitting={uploadDocMutation.isPending}
+            collections={[]}
+            defaultCollectionId={id}
+          />
+        </DialogBody>
+        <DialogFooter>
+          <Button variant="secondary" size="sm" onClick={() => setDocUploadOpen(false)} disabled={uploadDocMutation.isPending}>
+            Cancel
+          </Button>
+          <Button variant="primary" size="sm" type="submit" form="collection-upload-doc-form" isLoading={uploadDocMutation.isPending}>
+            Upload
+          </Button>
+        </DialogFooter>
+      </Dialog>
+
+      {/* — Delete Document Dialog — */}
+      <DeleteDocumentDialog
+        open={!!docDeleteTarget}
+        onClose={() => setDocDeleteTarget(null)}
+        document={docDeleteTarget}
+        onConfirm={handleDeleteDocument}
+        isDeleting={deleteDocMutation.isPending}
       />
     </section>
   );

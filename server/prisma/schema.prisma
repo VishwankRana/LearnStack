@@ -57,20 +57,24 @@ model Note {
 }
 
 model Document {
-  id           String      @id @default(cuid())
-  title        String
-  fileUrl      String
-  summary      String?
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  collectionId String?
-  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  title         String
+  fileUrl       String
+  fileType      String      @default("application/octet-stream")
+  fileSize      Int         @default(0)
+  extractedText String?     @db.Text
+  summary       String?
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  collectionId  String?
+  collection    Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@index([userId])
   @@index([collectionId])
 }
+
 
 model Bookmark {
   id           String      @id @default(cuid())

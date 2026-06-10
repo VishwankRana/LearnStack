@@ -7,9 +7,6 @@ export function AppShell() {
   const navigationItems = isAuthenticated
     ? [
         { label: "Home", href: "/" },
-        { label: "Vault", href: "/app" },
-        { label: "Notes", href: "/app/notes" },
-        { label: "Bookmarks", href: "/app/bookmarks" },
         { label: "Collections", href: "/app/collections" },
       ]
     : [
