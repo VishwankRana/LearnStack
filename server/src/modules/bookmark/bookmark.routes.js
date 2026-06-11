@@ -5,6 +5,7 @@ import {
   deleteBookmark,
   getBookmark,
   listBookmarks,
+  summarizeBookmark,
   updateBookmark,
 } from './bookmark.controller.js'
 
@@ -15,5 +16,6 @@ bookmarkRouter.use(authenticate)
 bookmarkRouter.get('/', listBookmarks)
 bookmarkRouter.get('/:id', getBookmark)
 bookmarkRouter.post('/', createBookmark)
+bookmarkRouter.post('/:id/summarize', summarizeBookmark)
 bookmarkRouter.patch('/:id', updateBookmark)
 bookmarkRouter.delete('/:id', deleteBookmark)

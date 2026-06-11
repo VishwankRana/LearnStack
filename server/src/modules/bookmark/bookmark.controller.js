@@ -44,3 +44,12 @@ export async function deleteBookmark(request, response) {
 
   response.json({ success: true, data: result })
 }
+
+export async function summarizeBookmark(request, response) {
+  const bookmark = await bookmarkService.summarize(
+    request.params.id,
+    request.user.id,
+  )
+
+  response.json({ success: true, data: bookmark })
+}

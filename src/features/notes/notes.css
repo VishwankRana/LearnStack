@@ -616,6 +616,68 @@
 
 .note-editor__preview img { border-radius: 12px; max-width: 100%; }
 
+/* ── AI Summary Panel ── */
+.note-editor__summary-panel {
+  padding: 20px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(168, 85, 247, 0.03));
+}
+
+.note-editor__summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.note-editor__summary-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #6366f1;
+}
+
+.note-editor__summary-title svg { width: 16px; height: 16px; }
+
+.note-editor__summary-text {
+  margin: 0;
+  font-size: 0.93rem;
+  line-height: 1.75;
+  color: var(--color-text-secondary);
+}
+
+/* When the summary panel renders full markdown, reset the min-height the preview normally enforces */
+.note-editor__summary-panel .note-editor__preview {
+  min-height: unset;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 0;
+}
+
+.note-editor__summary-empty {
+  margin: 0;
+  font-size: 0.86rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.note-editor__summary-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  font-size: 0.84rem;
+}
+
 /* ── Responsive ── */
 @media (max-width: 640px) {
   .notes-grid { grid-template-columns: 1fr; }

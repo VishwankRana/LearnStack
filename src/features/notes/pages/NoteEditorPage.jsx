@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
 import { DeleteNoteDialog } from '../components/DeleteNoteDialog';
-import { useNote, useCreateNote, useUpdateNote, useDeleteNote } from '../hooks/useNotes';
+import { useNote, useCreateNote, useUpdateNote, useDeleteNote, useSummarizeNote } from '../hooks/useNotes';
 import { useCollections } from '../../collections/hooks/useCollections';
 import '../notes.css';
 
@@ -85,6 +85,14 @@ function SaveIcon() {
       <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
       <polyline points="17 21 17 13 7 13 7 21" />
       <polyline points="7 3 7 8 15 8" />
+    </svg>
+  );
+}
+
+function SparklesIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
     </svg>
   );
 }
@@ -232,6 +240,7 @@ export function NoteEditorPage() {
   const createMutation = useCreateNote();
   const updateMutation = useUpdateNote();
   const deleteMutation = useDeleteNote();
+  const summarizeMutation = useSummarizeNote();
 
   /* — Seed form from fetched note — */
   useEffect(() => {
@@ -488,6 +497,50 @@ export function NoteEditorPage() {
           </div>
         )}
       </div>
+
+      {/* — AI Summary (existing notes only) — */}
+      {!isNew && (
+        <div className="note-editor__summary-panel">
+          <div className="note-editor__summary-header">
+            <h3 className="note-editor__summary-title">
+              <SparklesIcon /> AI Summary
+            </h3>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => summarizeMutation.mutate(id)}
+              isLoading={summarizeMutation.isPending}
+              disabled={summarizeMutation.isPending}
+            >
+              {existingNote?.summary ? <><SparklesIcon /> Regenerate</> : <><SparklesIcon /> Generate Summary</>}
+            </Button>
+          </div>
+
+          {summarizeMutation.isError && (
+            <p className="note-editor__summary-error">
+              {summarizeMutation.error?.message ?? 'Failed to generate summary. Please try again.'}
+            </p>
+          )}
+
+          {existingNote?.summary ? (
+            <div className="note-editor__summary-text note-editor__preview">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {existingNote.summary}
+              </ReactMarkdown>
+            </div>
+          ) : (
+            !summarizeMutation.isPending && (
+              <p className="note-editor__summary-empty">
+                No summary yet. Click &ldquo;Generate Summary&rdquo; to create one with AI.
+              </p>
+            )
+          )}
+
+          {summarizeMutation.isPending && (
+            <p className="note-editor__summary-empty">Generating summary&hellip;</p>
+          )}
+        </div>
+      )}
 
       {/* — Delete Dialog — */}
       <DeleteNoteDialog

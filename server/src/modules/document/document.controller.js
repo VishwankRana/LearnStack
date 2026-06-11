@@ -48,3 +48,12 @@ export async function deleteDocument(request, response) {
 
   response.json({ success: true, data: result })
 }
+
+export async function summarizeDocument(request, response) {
+  const document = await documentService.summarize(
+    request.params.id,
+    request.user.id,
+  )
+
+  response.json({ success: true, data: document })
+}

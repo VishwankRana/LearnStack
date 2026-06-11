@@ -2,6 +2,71 @@
 
 ---
 
+## 2026-06-11 18:17 UTC+5:30 — Phase 8: AI Summarization (Complete)
+
+### Files Changed
+| File | Change |
+|---|---|
+| `server/src/lib/openrouter.js` | **Created** — OpenRouter chat completions client using `OPENROUTER_API_KEY` |
+| `server/src/lib/summarizer.js` | **Created** — `summarizeDocument`, `summarizeNote`, `summarizeBookmark` using LLaMA 3.1 8B via OpenRouter |
+| `server/src/modules/document/document.service.js` | **Modified** — added `summarize(id, userId)` method |
+| `server/src/modules/document/document.controller.js` | **Modified** — added `summarizeDocument` handler |
+| `server/src/modules/document/document.routes.js` | **Modified** — registered `POST /:id/summarize` |
+| `server/src/modules/note/note.service.js` | **Modified** — added `summarize(id, userId)` method |
+| `server/src/modules/note/note.controller.js` | **Modified** — added `summarizeNote` handler |
+| `server/src/modules/note/note.routes.js` | **Modified** — registered `POST /:id/summarize` |
+| `server/src/modules/bookmark/bookmark.service.js` | **Modified** — added `summarize(id, userId)` method |
+| `server/src/modules/bookmark/bookmark.controller.js` | **Modified** — added `summarizeBookmark` handler |
+| `server/src/modules/bookmark/bookmark.routes.js` | **Modified** — registered `POST /:id/summarize` |
+| `src/features/documents/api/documentsApi.js` | **Modified** — added `summarizeDocument` API call |
+| `src/features/documents/hooks/useDocuments.js` | **Modified** — added `useSummarizeDocument` mutation |
+| `src/features/documents/pages/DocumentViewPage.jsx` | **Modified** — added AI Summary panel with Generate/Regenerate button |
+| `src/features/documents/documents.css` | **Modified** — added `.document-view__summary-*` styles |
+| `src/features/notes/api/notesApi.js` | **Modified** — added `summarizeNote` API call |
+| `src/features/notes/hooks/useNotes.js` | **Modified** — added `useSummarizeNote` mutation |
+| `src/features/notes/pages/NoteEditorPage.jsx` | **Modified** — added AI Summary panel below editor for existing notes |
+| `src/features/notes/notes.css` | **Modified** — added `.note-editor__summary-*` styles |
+| `src/features/bookmarks/api/bookmarksApi.js` | **Modified** — added `summarizeBookmark` API call |
+| `src/features/bookmarks/hooks/useBookmarks.js` | **Modified** — added `useSummarizeBookmark` mutation |
+| `src/features/bookmarks/components/BookmarkCard.jsx` | **Modified** — added sparkles button + inline summary display |
+| `src/features/bookmarks/bookmarks.css` | **Modified** — added `.bookmark-card__summary` and `--summarize` button styles |
+
+### Summary of Change
+Implemented Phase 8 AI Summarization end-to-end. A new OpenRouter client (`openrouter.js`) calls the `meta-llama/llama-3.1-8b-instruct:free` model using the existing `OPENROUTER_API_KEY`. Three summarizer functions handle documents (uses `extractedText`), notes (uses `content`), and bookmarks (uses title + URL + description). Each content type gets a `POST /:id/summarize` endpoint that runs the LLM call, writes the result to the `summary` DB column, and returns the full updated record. On the frontend, documents and notes get a dedicated indigo-tinted "AI Summary" panel with a Generate/Regenerate button; bookmarks get a sparkles icon action button on the card and the summary renders inline below the description.
+
+### Impacted Modules
+- `server/src/lib/` — 2 new utility files (openrouter, summarizer)
+- `server/src/modules/document/` — new summarize action
+- `server/src/modules/note/` — new summarize action
+- `server/src/modules/bookmark/` — new summarize action
+- `src/features/documents/` — API, hook, page, CSS
+- `src/features/notes/` — API, hook, page, CSS
+- `src/features/bookmarks/` — API, hook, card component, CSS
+
+### Risk Level
+**Medium** — new LLM API dependency (OpenRouter); failures are surfaced to the user as inline error messages and do not affect existing CRUD flows. The `summary` column is nullable so missing summaries never break rendering.
+
+---
+
+## 2026-06-11 18:07 UTC+5:30 — Bug Fix: Supabase Storage Bucket Missing
+
+### Files Changed
+| File | Change |
+|---|---|
+| `server/scripts/create-bucket.js` | **Created** — one-time setup script to create the `mindvault-assets` Supabase Storage bucket |
+
+### Summary of Change
+Fixed "File upload failed: Bucket not found" error that appeared when uploading documents. The `mindvault-assets` Supabase Storage bucket referenced in `server/.env` and `server/src/lib/storage.js` did not exist in the Supabase project. A setup script was created and executed to create the bucket as a **public** bucket with a 10 MB file-size limit and allowed MIME types matching the app's upload policy (PDF, DOCX, TXT). The bucket is now live and document uploads work correctly.
+
+### Impacted Modules
+- `server/src/lib/storage.js` — upload calls now succeed (bucket exists)
+- `server/scripts/create-bucket.js` — new utility script (idempotent, safe to re-run)
+
+### Risk Level
+**Low** — infrastructure-only fix. No application code changed. Script is idempotent (handles "already exists" gracefully).
+
+---
+
 ## 2026-06-10 01:55 UTC+5:30 — Phase 6: Bookmarks Module (Complete)
 
 ### Files Changed

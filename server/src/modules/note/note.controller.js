@@ -38,3 +38,9 @@ export async function deleteNote(request, response) {
 
   response.json({ success: true, data: result })
 }
+
+export async function summarizeNote(request, response) {
+  const note = await noteService.summarize(request.params.id, request.user.id)
+
+  response.json({ success: true, data: note })
+}

@@ -2,6 +2,7 @@ import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
 import { uploadFile, deleteFile } from '../../lib/storage.js'
 import { extractText } from '../../lib/text-extractor.js'
+import { summarizeDocument } from '../../lib/summarizer.js'
 
 const documentSelect = {
   id: true,
@@ -168,6 +169,24 @@ export const documentService = {
     return prisma.document.update({
       where: { id },
       data: { title, collectionId },
+      select: documentSelect,
+    })
+  },
+
+  async summarize(id, userId) {
+    const doc = await prisma.document.findUnique({
+      where: { id },
+      select: { userId: true, title: true, extractedText: true },
+    })
+
+    if (!doc) throw new HttpError(404, 'Document not found.')
+    if (doc.userId !== userId) throw new HttpError(403, 'You do not have access to this document.')
+
+    const summary = await summarizeDocument(doc.title, doc.extractedText)
+
+    return prisma.document.update({
+      where: { id },
+      data: { summary },
       select: documentSelect,
     })
   },

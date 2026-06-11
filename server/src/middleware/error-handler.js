@@ -13,6 +13,7 @@ export function errorHandler(error, request, response, next) {
     path: request.originalUrl,
     requestId: request.requestId,
     details: error.details ?? null,
+    ...(isHttpError ? {} : { cause: error?.message, stack: error?.stack }),
   })
 
   response.status(statusCode).json({

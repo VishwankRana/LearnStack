@@ -1,3 +1,6 @@
+import { Spinner } from '../../../components/ui/Spinner';
+import { useSummarizeBookmark } from '../hooks/useBookmarks';
+
 /** Extract hostname from a URL string, falling back gracefully */
 function extractDomain(url) {
   try {
@@ -58,9 +61,18 @@ function FolderIcon() {
   );
 }
 
+function SparklesIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+    </svg>
+  );
+}
+
 export function BookmarkCard({ bookmark, onEdit, onDelete }) {
   const domain = extractDomain(bookmark.url);
   const faviconSrc = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+  const summarizeMutation = useSummarizeBookmark();
 
   function handleEdit(e) {
     e.preventDefault();
@@ -70,6 +82,11 @@ export function BookmarkCard({ bookmark, onEdit, onDelete }) {
   function handleDelete(e) {
     e.preventDefault();
     onDelete?.(bookmark);
+  }
+
+  function handleSummarize(e) {
+    e.preventDefault();
+    summarizeMutation.mutate(bookmark.id);
   }
 
   return (
@@ -88,6 +105,16 @@ export function BookmarkCard({ bookmark, onEdit, onDelete }) {
         </div>
 
         <div className="bookmark-card__actions">
+          <button
+            type="button"
+            className="bookmark-card__action-btn bookmark-card__action-btn--summarize"
+            onClick={handleSummarize}
+            aria-label={bookmark.summary ? 'Regenerate AI summary' : 'Generate AI summary'}
+            disabled={summarizeMutation.isPending}
+            title={bookmark.summary ? 'Regenerate AI summary' : 'Generate AI summary'}
+          >
+            {summarizeMutation.isPending ? <Spinner size="sm" /> : <SparklesIcon />}
+          </button>
           <button
             type="button"
             className="bookmark-card__action-btn"
@@ -121,6 +148,14 @@ export function BookmarkCard({ bookmark, onEdit, onDelete }) {
         <span className="bookmark-card__domain">{domain}</span>
         {bookmark.description && (
           <p className="bookmark-card__description">{bookmark.description}</p>
+        )}
+        {bookmark.summary && (
+          <p className="bookmark-card__summary">{bookmark.summary}</p>
+        )}
+        {summarizeMutation.isPending && (
+          <p className="bookmark-card__summary bookmark-card__summary--loading">
+            Generating summary…
+          </p>
         )}
       </div>
 

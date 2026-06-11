@@ -192,6 +192,11 @@
   color: #dc2626;
 }
 
+.bookmark-card__action-btn--summarize:hover {
+  background: rgba(99, 102, 241, 0.1);
+  color: #6366f1;
+}
+
 .bookmark-card__action-btn svg {
   width: 13px;
   height: 13px;
@@ -233,6 +238,22 @@
   font-weight: 600;
   color: var(--color-text-muted);
   letter-spacing: 0.01em;
+}
+
+.bookmark-card__summary {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(168, 85, 247, 0.04));
+  border-left: 2px solid rgba(99, 102, 241, 0.3);
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+}
+
+.bookmark-card__summary--loading {
+  color: var(--color-text-muted);
+  font-style: italic;
 }
 
 .bookmark-card__description {

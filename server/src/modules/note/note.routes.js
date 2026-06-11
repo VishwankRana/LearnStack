@@ -5,6 +5,7 @@ import {
   deleteNote,
   getNote,
   listNotes,
+  summarizeNote,
   updateNote,
 } from './note.controller.js'
 
@@ -15,5 +16,6 @@ noteRouter.use(authenticate)
 noteRouter.get('/', listNotes)
 noteRouter.get('/:id', getNote)
 noteRouter.post('/', createNote)
+noteRouter.post('/:id/summarize', summarizeNote)
 noteRouter.patch('/:id', updateNote)
 noteRouter.delete('/:id', deleteNote)

@@ -1,5 +1,6 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
+import { summarizeBookmark } from '../../lib/summarizer.js'
 
 function validateUrl(raw) {
   try {
@@ -157,6 +158,24 @@ export const bookmarkService = {
         description: values.description,
         collectionId: values.collectionId,
       },
+      select: bookmarkSelect,
+    })
+  },
+
+  async summarize(id, userId) {
+    const bookmark = await prisma.bookmark.findUnique({
+      where: { id },
+      select: { userId: true, title: true, url: true, description: true },
+    })
+
+    if (!bookmark) throw new HttpError(404, 'Bookmark not found.')
+    if (bookmark.userId !== userId) throw new HttpError(403, 'You do not have access to this bookmark.')
+
+    const summary = await summarizeBookmark(bookmark.title, bookmark.url, bookmark.description)
+
+    return prisma.bookmark.update({
+      where: { id },
+      data: { summary },
       select: bookmarkSelect,
     })
   },

@@ -1,5 +1,6 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
+import { summarizeNote } from '../../lib/summarizer.js'
 
 function validateNotePayload(payload) {
   const title = payload.title?.trim()
@@ -143,6 +144,24 @@ export const noteService = {
         content: values.content,
         collectionId: values.collectionId,
       },
+      select: noteSelect,
+    })
+  },
+
+  async summarize(id, userId) {
+    const note = await prisma.note.findUnique({
+      where: { id },
+      select: { userId: true, title: true, content: true },
+    })
+
+    if (!note) throw new HttpError(404, 'Note not found.')
+    if (note.userId !== userId) throw new HttpError(403, 'You do not have access to this note.')
+
+    const summary = await summarizeNote(note.title, note.content)
+
+    return prisma.note.update({
+      where: { id },
+      data: { summary },
       select: noteSelect,
     })
   },

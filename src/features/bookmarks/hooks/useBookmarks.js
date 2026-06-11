@@ -5,6 +5,7 @@ import {
   createBookmark,
   updateBookmark,
   deleteBookmark,
+  summarizeBookmark,
 } from '../api/bookmarksApi';
 
 export const BOOKMARKS_KEY = ['bookmarks'];
@@ -57,6 +58,18 @@ export function useDeleteBookmark() {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['recent-content'] });
+    },
+  });
+}
+
+export function useSummarizeBookmark() {
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => summarizeBookmark(id, token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: BOOKMARKS_KEY });
     },
   });
 }

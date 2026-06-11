@@ -6,6 +6,7 @@ import {
   uploadDocument,
   updateDocument,
   deleteDocument,
+  summarizeDocument,
 } from '../api/documentsApi';
 
 export const DOCUMENTS_KEY = ['documents'];
@@ -71,6 +72,21 @@ export function useDeleteDocument() {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['recent-content'] });
+    },
+  });
+}
+
+export function useSummarizeDocument() {
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => summarizeDocument(id, token),
+    onSuccess: (updated) => {
+      if (updated?.id) {
+        queryClient.setQueryData([...DOCUMENTS_KEY, updated.id], updated);
+      }
+      queryClient.invalidateQueries({ queryKey: DOCUMENTS_KEY });
     },
   });
 }

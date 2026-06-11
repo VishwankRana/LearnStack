@@ -6,6 +6,7 @@ import {
   createNote,
   updateNote,
   deleteNote,
+  summarizeNote,
 } from '../api/notesApi';
 
 export const NOTES_KEY = ['notes'];
@@ -72,6 +73,21 @@ export function useDeleteNote() {
       queryClient.invalidateQueries({ queryKey: ['collections'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
       queryClient.invalidateQueries({ queryKey: ['recent-content'] });
+    },
+  });
+}
+
+export function useSummarizeNote() {
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => summarizeNote(id, token),
+    onSuccess: (updated) => {
+      if (updated?.id) {
+        queryClient.setQueryData([...NOTES_KEY, updated.id], updated);
+      }
+      queryClient.invalidateQueries({ queryKey: NOTES_KEY });
     },
   });
 }

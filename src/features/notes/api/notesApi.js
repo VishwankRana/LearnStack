@@ -27,3 +27,7 @@ export function updateNote(id, data, token) {
 export function deleteNote(id, token) {
   return apiRequest(`/notes/${id}`, { method: 'DELETE', token });
 }
+
+export function summarizeNote(id, token) {
+  return apiRequest(`/notes/${id}/summarize`, { method: 'POST', token });
+}

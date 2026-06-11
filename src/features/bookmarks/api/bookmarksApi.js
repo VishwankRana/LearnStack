@@ -27,3 +27,7 @@ export function updateBookmark(id, data, token) {
 export function deleteBookmark(id, token) {
   return apiRequest(`/bookmarks/${id}`, { method: 'DELETE', token });
 }
+
+export function summarizeBookmark(id, token) {
+  return apiRequest(`/bookmarks/${id}/summarize`, { method: 'POST', token });
+}

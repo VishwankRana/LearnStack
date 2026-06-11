@@ -12,7 +12,7 @@ import {
 } from '../../../components/ui/Dialog';
 import { Input } from '../../../components/ui/Input';
 import { DeleteDocumentDialog } from '../components/DeleteDocumentDialog';
-import { useDocument, useUpdateDocument, useDeleteDocument } from '../hooks/useDocuments';
+import { useDocument, useUpdateDocument, useDeleteDocument, useSummarizeDocument } from '../hooks/useDocuments';
 import { useCollections } from '../../collections/hooks/useCollections';
 import '../documents.css';
 
@@ -61,6 +61,25 @@ function FileTextIcon() {
   );
 }
 
+function SparklesIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+    </svg>
+  );
+}
+
+function RefreshIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+      <path d="M21 3v5h-5" />
+      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+      <path d="M8 16H3v5" />
+    </svg>
+  );
+}
+
 function getFileTypeInfo(mimeType) {
   if (mimeType === 'application/pdf') return { label: 'PDF', cls: 'pdf' };
   if (mimeType?.includes('wordprocessingml')) return { label: 'DOCX', cls: 'docx' };
@@ -89,6 +108,7 @@ export function DocumentViewPage() {
   const { data: collections } = useCollections();
   const updateMutation = useUpdateDocument();
   const deleteMutation = useDeleteDocument();
+  const summarizeMutation = useSummarizeDocument();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -219,6 +239,44 @@ export function DocumentViewPage() {
               <div className="document-view__stat-label">Words Extracted</div>
             </div>
           </div>
+        )}
+      </div>
+
+      {/* — AI Summary — */}
+      <div className="document-view__content document-view__summary-panel">
+        <div className="document-view__summary-header">
+          <h3 className="document-view__content-title">
+            <SparklesIcon /> AI Summary
+          </h3>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => summarizeMutation.mutate(document.id)}
+            isLoading={summarizeMutation.isPending}
+            disabled={summarizeMutation.isPending}
+          >
+            {document.summary ? <><RefreshIcon /> Regenerate</> : <><SparklesIcon /> Generate Summary</>}
+          </Button>
+        </div>
+
+        {summarizeMutation.isError && (
+          <p className="document-view__summary-error">
+            {summarizeMutation.error?.message ?? 'Failed to generate summary. Please try again.'}
+          </p>
+        )}
+
+        {document.summary ? (
+          <p className="document-view__summary-text">{document.summary}</p>
+        ) : (
+          !summarizeMutation.isPending && (
+            <p className="document-view__summary-empty">
+              No summary yet. Click &ldquo;Generate Summary&rdquo; to create one with AI.
+            </p>
+          )
+        )}
+
+        {summarizeMutation.isPending && (
+          <p className="document-view__summary-empty">Generating summary&hellip;</p>
         )}
       </div>
 

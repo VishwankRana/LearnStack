@@ -464,6 +464,57 @@
   border-radius: 16px;
 }
 
+/* — AI Summary Panel — */
+.document-view__summary-panel {
+  border-color: rgba(99, 102, 241, 0.18);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(168, 85, 247, 0.03));
+}
+
+.document-view__summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.document-view__summary-header .document-view__content-title {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6366f1;
+}
+
+.document-view__summary-header .document-view__content-title svg {
+  width: 18px;
+  height: 18px;
+}
+
+.document-view__summary-text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.75;
+  color: var(--color-text-secondary);
+}
+
+.document-view__summary-empty {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.document-view__summary-error {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
 /* — Skeleton — */
 .document-card--skeleton {
   pointer-events: none;

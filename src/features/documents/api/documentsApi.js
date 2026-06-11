@@ -27,3 +27,7 @@ export function updateDocument(id, data, token) {
 export function deleteDocument(id, token) {
   return apiRequest(`/documents/${id}`, { method: 'DELETE', token });
 }
+
+export function summarizeDocument(id, token) {
+  return apiRequest(`/documents/${id}/summarize`, { method: 'POST', token });
+}
