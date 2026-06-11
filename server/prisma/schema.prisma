@@ -41,35 +41,37 @@ model Collection {
 }
 
 model Note {
-  id           String      @id @default(cuid())
+  id           String                      @id @default(cuid())
   title        String
   content      String
   summary      String?
+  embedding    Unsupported("vector(384)")?
   userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId String?
-  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  collection   Collection?                 @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
 
   @@index([userId])
   @@index([collectionId])
 }
 
 model Document {
-  id            String      @id @default(cuid())
+  id            String                      @id @default(cuid())
   title         String
   fileUrl       String
-  fileType      String      @default("application/octet-stream")
-  fileSize      Int         @default(0)
-  extractedText String?     @db.Text
+  fileType      String                      @default("application/octet-stream")
+  fileSize      Int                         @default(0)
+  extractedText String?                     @db.Text
   summary       String?
+  embedding     Unsupported("vector(384)")?
   userId        String
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId  String?
-  collection    Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  collection    Collection?                 @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime                    @default(now())
+  updatedAt     DateTime                    @updatedAt
 
   @@index([userId])
   @@index([collectionId])
@@ -77,17 +79,18 @@ model Document {
 
 
 model Bookmark {
-  id           String      @id @default(cuid())
+  id           String                      @id @default(cuid())
   title        String
   url          String
   description  String?
   summary      String?
+  embedding    Unsupported("vector(384)")?
   userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId String?
-  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  collection   Collection?                 @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime                    @default(now())
+  updatedAt    DateTime                    @updatedAt
 
   @@index([userId])
   @@index([collectionId])

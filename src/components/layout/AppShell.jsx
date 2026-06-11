@@ -8,6 +8,7 @@ export function AppShell() {
     ? [
         { label: "Home", href: "/" },
         { label: "Collections", href: "/app/collections" },
+        { label: "Search", href: "/app/search" },
       ]
     : [
         { label: "Home", href: "/" },

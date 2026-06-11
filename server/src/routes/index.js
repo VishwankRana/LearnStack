@@ -5,6 +5,7 @@ import { collectionRouter } from '../modules/collection/collection.routes.js'
 import { dashboardRouter } from '../modules/dashboard/dashboard.routes.js'
 import { documentRouter } from '../modules/document/document.routes.js'
 import { noteRouter } from '../modules/note/note.routes.js'
+import { searchRouter } from '../modules/search/search.routes.js'
 import { healthRouter } from './health.js'
 import { systemRouter } from '../modules/system/system.routes.js'
 
@@ -16,5 +17,6 @@ apiRouter.use('/collections', collectionRouter)
 apiRouter.use('/dashboard', dashboardRouter)
 apiRouter.use('/documents', documentRouter)
 apiRouter.use('/notes', noteRouter)
+apiRouter.use('/search', searchRouter)
 apiRouter.use('/health', healthRouter)
 apiRouter.use('/system', systemRouter)

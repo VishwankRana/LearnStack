@@ -1,6 +1,7 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
 import { summarizeNote } from '../../lib/summarizer.js'
+import { storeEmbedding } from '../../lib/vector-search.js'
 
 function validateNotePayload(payload) {
   const title = payload.title?.trim()
@@ -93,7 +94,7 @@ export const noteService = {
       }
     }
 
-    return prisma.note.create({
+    const note = await prisma.note.create({
       data: {
         title: values.title,
         content: values.content,
@@ -102,6 +103,9 @@ export const noteService = {
       },
       select: noteSelect,
     })
+
+    storeEmbedding('Note', note.id, `${values.title} ${values.content}`).catch(() => {})
+    return note
   },
 
   async update(id, userId, payload) {
@@ -137,7 +141,7 @@ export const noteService = {
       }
     }
 
-    return prisma.note.update({
+    const updated = await prisma.note.update({
       where: { id },
       data: {
         title: values.title,
@@ -146,6 +150,9 @@ export const noteService = {
       },
       select: noteSelect,
     })
+
+    storeEmbedding('Note', id, `${values.title} ${values.content}`).catch(() => {})
+    return updated
   },
 
   async summarize(id, userId) {

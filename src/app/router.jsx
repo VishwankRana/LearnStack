@@ -12,6 +12,7 @@ import { NoteEditorPage } from '../features/notes/pages/NoteEditorPage'
 import { BookmarksPage } from '../features/bookmarks/pages/BookmarksPage'
 import { DocumentsPage } from '../features/documents/pages/DocumentsPage'
 import { DocumentViewPage } from '../features/documents/pages/DocumentViewPage'
+import { SearchPage } from '../features/search/pages/SearchPage'
 
 export const router = createBrowserRouter([
   {
@@ -68,6 +69,10 @@ export const router = createBrowserRouter([
           {
             path: 'app/documents/:id',
             element: <DocumentViewPage />,
+          },
+          {
+            path: 'app/search',
+            element: <SearchPage />,
           },
         ],
       },

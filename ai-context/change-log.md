@@ -2,6 +2,48 @@
 
 ---
 
+## 2026-06-11 18:44 UTC+5:30 — Phase 9: Vector Search (Complete)
+
+### Files Changed
+| File | Change |
+|---|---|
+| `server/prisma/schema.prisma` | **Modified** — added `embedding Unsupported("vector(384)")?` to Note, Document, Bookmark |
+| `server/prisma/migrations/20260611134500_vector_search/migration.sql` | **Created** — enables pgvector, adds vector columns, creates HNSW indexes |
+| `server/scripts/setup-vector-search.js` | **Created** — one-time DDL setup script (already applied) |
+| `server/src/lib/embeddings.js` | **Created** — lazy-loaded `@xenova/transformers` pipeline; `generateEmbedding()` + `warmupEmbeddingModel()` |
+| `server/src/lib/vector-search.js` | **Created** — `storeEmbedding()` and `semanticSearch()` using pgvector cosine distance (`<=>`) |
+| `server/src/modules/search/search.service.js` | **Created** — calls semantic search, merges + ranks results by similarity |
+| `server/src/modules/search/search.controller.js` | **Created** — `GET /search?q=` handler |
+| `server/src/modules/search/search.routes.js` | **Created** — authenticated search router |
+| `server/src/routes/index.js` | **Modified** — registered `/search` route |
+| `server/src/server.js` | **Modified** — warm-up embedding model on startup |
+| `server/src/modules/document/document.service.js` | **Modified** — fire-and-forget `storeEmbedding` on create |
+| `server/src/modules/note/note.service.js` | **Modified** — fire-and-forget `storeEmbedding` on create + update |
+| `server/src/modules/bookmark/bookmark.service.js` | **Modified** — fire-and-forget `storeEmbedding` on create + update |
+| `src/features/search/api/searchApi.js` | **Created** |
+| `src/features/search/hooks/useSearch.js` | **Created** — TanStack Query hook (deferred, min 3 chars) |
+| `src/features/search/pages/SearchPage.jsx` | **Created** — full search UI with input, ranked results, similarity badges |
+| `src/features/search/search.css` | **Created** — search page styles |
+| `src/app/router.jsx` | **Modified** — added `/app/search` route |
+| `src/components/layout/AppShell.jsx` | **Modified** — added Search nav link |
+
+### Summary of Change
+Implemented Phase 9 end-to-end semantic vector search. Text is embedded using `Xenova/all-MiniLM-L6-v2` (384-dim, local model via `@xenova/transformers` — no new API key needed). Embeddings are generated fire-and-forget on content create/update and stored in `vector(384)` columns in PostgreSQL via pgvector. The `GET /api/v1/search?q=` endpoint runs cosine-distance nearest-neighbour search in parallel across Notes, Documents, and Bookmarks, returning results ranked by similarity (threshold 0.25). The Search UI at `/app/search` shows results in a unified ranked list with type labels, similarity badges (Strong/Good/Related), excerpts, and direct links. The embedding model warms up on server startup for fast first-query response.
+
+### Impacted Modules
+- `server/src/lib/` — 2 new utility files (embeddings, vector-search)
+- `server/src/modules/search/` — new module
+- `server/src/modules/document|note|bookmark/` — embedding hooks added
+- `server/src/server.js` — model warm-up
+- `src/features/search/` — new frontend feature module
+- `src/app/router.jsx` — 1 new route
+- `src/components/layout/AppShell.jsx` — nav link
+
+### Risk Level
+**Medium** — adds pgvector dependency (already on Supabase) and `@xenova/transformers` (local ONNX model). Embedding failures are non-fatal (fire-and-forget). Existing CRUD flows unaffected. First server start after deploy will download ~25 MB model to `~/.cache/huggingface`.
+
+---
+
 ## 2026-06-11 18:17 UTC+5:30 — Phase 8: AI Summarization (Complete)
 
 ### Files Changed

@@ -1,6 +1,7 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
 import { summarizeBookmark } from '../../lib/summarizer.js'
+import { storeEmbedding } from '../../lib/vector-search.js'
 
 function validateUrl(raw) {
   try {
@@ -108,7 +109,7 @@ export const bookmarkService = {
       }
     }
 
-    return prisma.bookmark.create({
+    const bookmark = await prisma.bookmark.create({
       data: {
         title: values.title,
         url: values.url,
@@ -118,6 +119,10 @@ export const bookmarkService = {
       },
       select: bookmarkSelect,
     })
+
+    const embText = `${values.title} ${values.url} ${values.description ?? ''}`.trim()
+    storeEmbedding('Bookmark', bookmark.id, embText).catch(() => {})
+    return bookmark
   },
 
   async update(id, userId, payload) {
@@ -150,7 +155,7 @@ export const bookmarkService = {
       }
     }
 
-    return prisma.bookmark.update({
+    const updated = await prisma.bookmark.update({
       where: { id },
       data: {
         title: values.title,
@@ -160,6 +165,10 @@ export const bookmarkService = {
       },
       select: bookmarkSelect,
     })
+
+    const embText = `${values.title} ${values.url} ${values.description ?? ''}`.trim()
+    storeEmbedding('Bookmark', id, embText).catch(() => {})
+    return updated
   },
 
   async summarize(id, userId) {

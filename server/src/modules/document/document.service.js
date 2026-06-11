@@ -3,6 +3,7 @@ import { prisma } from '../../lib/prisma.js'
 import { uploadFile, deleteFile } from '../../lib/storage.js'
 import { extractText } from '../../lib/text-extractor.js'
 import { summarizeDocument } from '../../lib/summarizer.js'
+import { storeEmbedding } from '../../lib/vector-search.js'
 
 const documentSelect = {
   id: true,
@@ -114,7 +115,7 @@ export const documentService = {
     // Extract text (non-blocking for the create flow)
     const extractedText = await extractText(file.buffer, file.mimetype)
 
-    return prisma.document.create({
+    const doc = await prisma.document.create({
       data: {
         title,
         fileUrl,
@@ -126,6 +127,12 @@ export const documentService = {
       },
       select: documentSelect,
     })
+
+    // Generate + store embedding asynchronously — never blocks the response
+    const embeddingText = `${title} ${extractedText ?? ''}`.trim()
+    storeEmbedding('Document', doc.id, embeddingText).catch(() => {})
+
+    return doc
   },
 
   async update(id, userId, payload) {
