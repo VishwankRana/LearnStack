@@ -1,31 +1,54 @@
+import { Link } from "react-router-dom";
 import {
   NoteIcon,
   DocumentIcon,
   BookmarkIcon,
-  SearchIcon,
   EditIcon,
   InboxIcon,
 } from "./DashboardIcons";
 
-const ACTIVITY_ICONS = {
-  note_created: NoteIcon,
-  note_updated: EditIcon,
-  document_uploaded: DocumentIcon,
-  bookmark_added: BookmarkIcon,
-  search: SearchIcon,
-};
-
-function getActivityIndicatorClass(type) {
-  const normalized = (type || "").toLowerCase().replace(/\s+/g, "_");
-  const known = [
-    "note_created",
-    "note_updated",
-    "document_uploaded",
-    "bookmark_added",
-    "search",
-  ];
-  return known.includes(normalized) ? normalized : "default";
+function CollectionIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <rect x="2" y="7" width="20" height="14" rx="2" />
+      <path d="M16 3H8a2 2 0 00-2 2v2h12V5a2 2 0 00-2-2z" />
+    </svg>
+  );
 }
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" />
+    </svg>
+  );
+}
+
+function CommitIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+      <circle cx="12" cy="12" r="4" />
+      <line x1="1.05" y1="12" x2="7" y2="12" />
+      <line x1="17.01" y1="12" x2="22.96" y2="12" />
+    </svg>
+  );
+}
+
+const TYPE_CONFIG = {
+  NOTE_CREATED:        { label: "Note Created",        Icon: NoteIcon,       cls: "note_created"       },
+  NOTE_UPDATED:        { label: "Note Updated",        Icon: EditIcon,       cls: "note_updated"       },
+  NOTE_DELETED:        { label: "Note Deleted",        Icon: TrashIcon,      cls: "default"            },
+  NOTE_COMMITTED:      { label: "Version Committed",   Icon: CommitIcon,     cls: "default"            },
+  DOCUMENT_UPLOADED:   { label: "Document Uploaded",   Icon: DocumentIcon,   cls: "document_uploaded"  },
+  DOCUMENT_DELETED:    { label: "Document Deleted",    Icon: TrashIcon,      cls: "default"            },
+  BOOKMARK_ADDED:      { label: "Bookmark Saved",      Icon: BookmarkIcon,   cls: "bookmark_added"     },
+  BOOKMARK_UPDATED:    { label: "Bookmark Updated",    Icon: BookmarkIcon,   cls: "bookmark_added"     },
+  BOOKMARK_DELETED:    { label: "Bookmark Deleted",    Icon: TrashIcon,      cls: "default"            },
+  COLLECTION_CREATED:  { label: "Collection Created",  Icon: CollectionIcon, cls: "default"            },
+  COLLECTION_UPDATED:  { label: "Collection Updated",  Icon: CollectionIcon, cls: "default"            },
+  COLLECTION_DELETED:  { label: "Collection Deleted",  Icon: TrashIcon,      cls: "default"            },
+};
 
 function formatRelativeTime(dateStr) {
   const date = new Date(dateStr);
@@ -39,10 +62,7 @@ function formatRelativeTime(dateStr) {
   if (diffMin < 60) return `${diffMin}m ago`;
   if (diffHr < 24) return `${diffHr}h ago`;
   if (diffDay < 7) return `${diffDay}d ago`;
-  return date.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function ActivitySkeleton() {
@@ -62,7 +82,10 @@ function ActivitySkeleton() {
   );
 }
 
-export function ActivityFeed({ activities, isLoading }) {
+export function ActivityFeed({ activities: raw, isLoading }) {
+  // Support both array and { data: [...] } shapes
+  const activities = Array.isArray(raw) ? raw : (raw?.data ?? []);
+
   if (isLoading) {
     return <ActivitySkeleton />;
   }
@@ -84,22 +107,19 @@ export function ActivityFeed({ activities, isLoading }) {
   return (
     <div className="activity-feed">
       {activities.map((activity) => {
-        const typeKey = getActivityIndicatorClass(activity.type);
-        const IconComponent = ACTIVITY_ICONS[typeKey] || NoteIcon;
+        const config  = TYPE_CONFIG[activity.type];
+        const cls     = config?.cls ?? "default";
+        const Icon    = config?.Icon ?? NoteIcon;
 
         return (
           <div key={activity.id} className="activity-item">
-            <div
-              className={`activity-item__indicator activity-item__indicator--${typeKey}`}
-            >
-              <IconComponent />
+            <div className={`activity-item__indicator activity-item__indicator--${cls}`}>
+              <Icon />
             </div>
             <div className="activity-item__body">
               <h4 className="activity-item__title">{activity.title}</h4>
               {activity.description && (
-                <p className="activity-item__description">
-                  {activity.description}
-                </p>
+                <p className="activity-item__description">{activity.description}</p>
               )}
             </div>
             <time className="activity-item__time">
@@ -108,6 +128,20 @@ export function ActivityFeed({ activities, isLoading }) {
           </div>
         );
       })}
+
+      <div style={{ padding: "12px 0 0", textAlign: "center" }}>
+        <Link
+          to="/app/activity"
+          style={{
+            fontSize: "0.8rem",
+            color: "#6366f1",
+            textDecoration: "none",
+            fontWeight: 500,
+          }}
+        >
+          View full timeline →
+        </Link>
+      </div>
     </div>
   );
 }

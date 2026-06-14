@@ -1,14 +1,43 @@
 import { NavLink, Outlet } from "react-router-dom";
+import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/useAuth";
+import { SearchModal } from "../../features/search/components/SearchModal";
 import "../../App.css";
+import "../../features/search/search.css";
+
+function SearchTriggerIcon() {
+  return (
+    <svg className="topbar-search-btn__icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="9" cy="9" r="6" />
+      <path d="m15 15 3 3" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export function AppShell() {
   const { isAuthenticated, logout, user } = useAuth();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  const openSearch = useCallback(() => setSearchOpen(true), []);
+  const closeSearch = useCallback(() => setSearchOpen(false), []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    function handleKey(e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchOpen((prev) => !prev);
+      }
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isAuthenticated]);
+
   const navigationItems = isAuthenticated
     ? [
         { label: "Home", href: "/" },
         { label: "Collections", href: "/app/collections" },
-        { label: "Search", href: "/app/search" },
+        { label: "Activity", href: "/app/activity" },
       ]
     : [
         { label: "Home", href: "/" },
@@ -37,6 +66,20 @@ export function AppShell() {
               </NavLink>
             ))}
             {isAuthenticated ? (
+              <button
+                type="button"
+                className="topbar-search-btn"
+                onClick={openSearch}
+                aria-label="Open search"
+              >
+                <SearchTriggerIcon />
+                <span className="topbar-search-btn__text">Search</span>
+                <span className="topbar-search-btn__kbd">
+                  <span>⌘</span>K
+                </span>
+              </button>
+            ) : null}
+            {isAuthenticated ? (
               <button className="topbar__action" onClick={logout} type="button">
                 Logout {user ? `(${user.name})` : ""}
               </button>
@@ -46,6 +89,7 @@ export function AppShell() {
 
         <Outlet />
       </div>
+      {searchOpen && <SearchModal onClose={closeSearch} />}
     </div>
   );
 }

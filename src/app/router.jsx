@@ -13,6 +13,7 @@ import { BookmarksPage } from '../features/bookmarks/pages/BookmarksPage'
 import { DocumentsPage } from '../features/documents/pages/DocumentsPage'
 import { DocumentViewPage } from '../features/documents/pages/DocumentViewPage'
 import { SearchPage } from '../features/search/pages/SearchPage'
+import { ActivityPage } from '../features/activity/pages/ActivityPage'
 
 export const router = createBrowserRouter([
   {
@@ -74,9 +75,12 @@ export const router = createBrowserRouter([
             path: 'app/search',
             element: <SearchPage />,
           },
+          {
+            path: 'app/activity',
+            element: <ActivityPage />,
+          },
         ],
       },
     ],
   },
 ])
-

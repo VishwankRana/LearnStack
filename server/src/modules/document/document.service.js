@@ -3,7 +3,7 @@ import { prisma } from '../../lib/prisma.js'
 import { uploadFile, deleteFile } from '../../lib/storage.js'
 import { extractText } from '../../lib/text-extractor.js'
 import { summarizeDocument } from '../../lib/summarizer.js'
-import { storeEmbedding } from '../../lib/vector-search.js'
+import { activityService, ACTIVITY_TYPES } from '../activity/activity.service.js'
 
 const documentSelect = {
   id: true,
@@ -128,9 +128,7 @@ export const documentService = {
       select: documentSelect,
     })
 
-    // Generate + store embedding asynchronously — never blocks the response
-    const embeddingText = `${title} ${extractedText ?? ''}`.trim()
-    storeEmbedding('Document', doc.id, embeddingText).catch(() => {})
+    activityService.log(userId, ACTIVITY_TYPES.DOCUMENT_UPLOADED, `Uploaded document "${doc.title}"`)
 
     return doc
   },
@@ -217,6 +215,7 @@ export const documentService = {
 
     // Delete from database
     await prisma.document.delete({ where: { id } })
+    activityService.log(userId, ACTIVITY_TYPES.DOCUMENT_DELETED, `Deleted a document`)
 
     return { message: 'Document deleted successfully.' }
   },

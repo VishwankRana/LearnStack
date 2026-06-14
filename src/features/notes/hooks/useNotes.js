@@ -7,6 +7,8 @@ import {
   updateNote,
   deleteNote,
   summarizeNote,
+  fetchLinkedNotes,
+  fetchBacklinks,
 } from '../api/notesApi';
 
 export const NOTES_KEY = ['notes'];
@@ -89,5 +91,27 @@ export function useSummarizeNote() {
       }
       queryClient.invalidateQueries({ queryKey: NOTES_KEY });
     },
+  });
+}
+
+export function useLinkedNotes(noteId) {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: [...NOTES_KEY, noteId, 'linked-notes'],
+    queryFn: () => fetchLinkedNotes(noteId, token),
+    enabled: !!token && !!noteId,
+    staleTime: 15_000,
+  });
+}
+
+export function useBacklinks(noteId) {
+  const { token } = useAuth();
+
+  return useQuery({
+    queryKey: [...NOTES_KEY, noteId, 'backlinks'],
+    queryFn: () => fetchBacklinks(noteId, token),
+    enabled: !!token && !!noteId,
+    staleTime: 15_000,
   });
 }

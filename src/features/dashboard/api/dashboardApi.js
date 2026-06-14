@@ -7,8 +7,8 @@ export function fetchDashboardStats(token) {
   })
 }
 
-export function fetchRecentActivity(token) {
-  return apiRequest('/dashboard/recent-activity', {
+export function fetchRecentActivity(token, limit = 8) {
+  return apiRequest(`/activities/recent?limit=${limit}`, {
     method: 'GET',
     token,
   })

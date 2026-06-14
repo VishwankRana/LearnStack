@@ -1,5 +1,6 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
+import { activityService, ACTIVITY_TYPES } from '../activity/activity.service.js'
 
 function validateCollectionPayload(payload) {
   const name = payload.name?.trim()
@@ -73,7 +74,7 @@ export const collectionService = {
   async create(userId, payload) {
     const values = validateCollectionPayload(payload)
 
-    return prisma.collection.create({
+    const collection = await prisma.collection.create({
       data: {
         name: values.name,
         description: values.description,
@@ -90,6 +91,10 @@ export const collectionService = {
         },
       },
     })
+
+    activityService.log(userId, ACTIVITY_TYPES.COLLECTION_CREATED, `Created collection "${collection.name}"`)
+
+    return collection
   },
 
   async update(id, userId, payload) {
@@ -112,7 +117,7 @@ export const collectionService = {
       color: payload.color ?? existing.color,
     })
 
-    return prisma.collection.update({
+    const updated = await prisma.collection.update({
       where: { id },
       data: {
         name: values.name,
@@ -129,6 +134,10 @@ export const collectionService = {
         },
       },
     })
+
+    activityService.log(userId, ACTIVITY_TYPES.COLLECTION_UPDATED, `Updated collection "${updated.name}"`)
+
+    return updated
   },
 
   async remove(id, userId) {
@@ -143,6 +152,7 @@ export const collectionService = {
     }
 
     await prisma.collection.delete({ where: { id } })
+    activityService.log(userId, ACTIVITY_TYPES.COLLECTION_DELETED, `Deleted collection "${existing.name}"`)
 
     return { message: 'Collection deleted successfully.' }
   },

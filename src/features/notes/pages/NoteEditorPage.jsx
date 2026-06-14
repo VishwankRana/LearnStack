@@ -7,6 +7,11 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { DeleteNoteDialog } from '../components/DeleteNoteDialog';
 import { useNote, useCreateNote, useUpdateNote, useDeleteNote, useSummarizeNote } from '../hooks/useNotes';
 import { useCollections } from '../../collections/hooks/useCollections';
+import { NoteLinksPanel } from '../components/NoteLinksPanel';
+import { WikiLinkDropdown } from '../components/WikiLinkDropdown';
+import { useWikiLinkAutocomplete } from '../hooks/useWikiLinkAutocomplete';
+import { VersionHistoryDrawer } from '../components/VersionHistoryDrawer';
+import { useCommitSnapshot } from '../hooks/useVersions';
 import '../notes.css';
 
 /* ── Icons ── */
@@ -93,6 +98,23 @@ function SparklesIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" />
+    </svg>
+  );
+}
+function HistoryIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/>
+      <path d="M12 7v5l4 2"/>
+    </svg>
+  );
+}
+function CommitIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3"/>
+      <line x1="3" y1="12" x2="9" y2="12"/>
+      <line x1="15" y1="12" x2="21" y2="12"/>
     </svg>
   );
 }
@@ -227,11 +249,11 @@ export function NoteEditorPage() {
   /* — Local editor state — */
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  // Pre-select collection when coming from ?collectionId= (e.g. from a collection detail page)
   const [collectionId, setCollectionId] = useState(() => searchParams.get('collectionId') ?? '');
-  const [mode, setMode] = useState('write'); // 'write' | 'preview'
+  const [mode, setMode] = useState('write');
   const [saveStatus, setSaveStatus] = useState('idle');
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [versionDrawerOpen, setVersionDrawerOpen] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
   const textareaRef = useRef(null);
@@ -241,6 +263,11 @@ export function NoteEditorPage() {
   const updateMutation = useUpdateNote();
   const deleteMutation = useDeleteNote();
   const summarizeMutation = useSummarizeNote();
+
+  const commitMutation = useCommitSnapshot(id);
+
+  /* — Wiki-link autocomplete — */
+  const wikiAC = useWikiLinkAutocomplete(textareaRef, content, setContent, id ?? null);
 
   /* — Seed form from fetched note — */
   useEffect(() => {
@@ -335,6 +362,10 @@ export function NoteEditorPage() {
 
   /* — Tab key in textarea inserts spaces — */
   function handleTextareaKeyDown(e) {
+    // Give wiki-link autocomplete first priority on arrow/enter/escape/tab
+    wikiAC.onKeyDown(e);
+    if (e.defaultPrevented) return;
+
     if (e.key === 'Tab') {
       e.preventDefault();
       const el = e.target;
@@ -342,6 +373,7 @@ export function NoteEditorPage() {
       const newValue = value.slice(0, start) + '  ' + value.slice(end);
       setContent(newValue);
       requestAnimationFrame(() => el.setSelectionRange(start + 2, start + 2));
+      return;
     }
     handleKeyDown(e);
   }
@@ -373,8 +405,7 @@ export function NoteEditorPage() {
   return (
     <section className="note-editor" onKeyDown={handleKeyDown}>
       {/* — Top Bar — */}
-      <div className="note-editor__topbar">
-        <Link to="/app/notes" className="note-editor__back">
+      <div className="note-editor__topbar">        <Link to="/app/notes" className="note-editor__back">
           <BackIcon /> Notes
         </Link>
 
@@ -394,6 +425,30 @@ export function NoteEditorPage() {
             </Button>
           ) : (
             <>
+              <Button
+                variant="secondary"
+                size="sm"
+                iconOnly
+                onClick={() => setVersionDrawerOpen(true)}
+                aria-label="View version history"
+                title="Version History"
+              >
+                <HistoryIcon />
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={async () => {
+                  clearTimeout(autoSaveTimerRef.current);
+                  await performSave(title, content, collectionId);
+                  commitMutation.mutate();
+                }}
+                isLoading={commitMutation.isPending}
+                title="Commit — save the note and create a version snapshot"
+              >
+                <CommitIcon />
+                Commit
+              </Button>
               <Button
                 variant="secondary"
                 size="sm"
@@ -473,16 +528,34 @@ export function NoteEditorPage() {
           <>
             <MarkdownToolbar
               textareaRef={textareaRef}
-              onContentChange={setContent}
+              onContentChange={(newVal) => {
+                setContent(newVal);
+                requestAnimationFrame(() => wikiAC.handleContentChange(newVal));
+              }}
             />
             <textarea
               ref={textareaRef}
               className="note-editor__textarea"
               placeholder="Start writing… Markdown is supported."
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={(e) => {
+                setContent(e.target.value);
+                requestAnimationFrame(() => wikiAC.handleContentChange(e.target.value));
+              }}
+              onKeyUp={() => wikiAC.handleContentChange(content)}
+              onClick={() => wikiAC.handleContentChange(content)}
               onKeyDown={handleTextareaKeyDown}
               spellCheck
+            />
+            <WikiLinkDropdown
+              isOpen={wikiAC.isOpen}
+              suggestions={wikiAC.suggestions}
+              query={wikiAC.query}
+              activeIndex={wikiAC.activeIndex}
+              dropdownStyle={wikiAC.dropdownStyle}
+              isLoading={wikiAC.isLoading}
+              onSelect={wikiAC.onSelect}
+              onHover={wikiAC.setActiveIndex}
             />
           </>
         ) : (
@@ -541,6 +614,23 @@ export function NoteEditorPage() {
           )}
         </div>
       )}
+
+      {/* — Note Links & Backlinks (existing notes only) — */}
+      {!isNew && <NoteLinksPanel noteId={id} />}
+
+      {/* — Version History Drawer — */}
+      <VersionHistoryDrawer
+        open={versionDrawerOpen}
+        onClose={() => setVersionDrawerOpen(false)}
+        noteId={id}
+        noteTitle={title}
+        currentContent={content}
+        onRestored={(restoredNote) => {
+          setTitle(restoredNote.title);
+          setContent(restoredNote.content ?? '');
+          setSaveStatus('idle');
+        }}
+      />
 
       {/* — Delete Dialog — */}
       <DeleteNoteDialog

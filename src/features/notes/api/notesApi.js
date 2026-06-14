@@ -31,3 +31,11 @@ export function deleteNote(id, token) {
 export function summarizeNote(id, token) {
   return apiRequest(`/notes/${id}/summarize`, { method: 'POST', token });
 }
+
+export function fetchLinkedNotes(id, token) {
+  return apiRequest(`/notes/${id}/linked-notes`, { method: 'GET', token });
+}
+
+export function fetchBacklinks(id, token) {
+  return apiRequest(`/notes/${id}/backlinks`, { method: 'GET', token });
+}

@@ -41,56 +41,80 @@ model Collection {
 }
 
 model Note {
-  id           String                      @id @default(cuid())
+  id           String      @id @default(cuid())
   title        String
   content      String
   summary      String?
-  embedding    Unsupported("vector(384)")?
   userId       String
-  user         User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId String?
-  collection   Collection?                 @relation(fields: [collectionId], references: [id], onDelete: SetNull)
-  createdAt    DateTime                    @default(now())
-  updatedAt    DateTime                    @updatedAt
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  outgoingLinks NoteLink[]    @relation("NoteSource")
+  incomingLinks NoteLink[]    @relation("NoteTarget")
+  versions      NoteVersion[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   @@index([userId])
   @@index([collectionId])
+}
+
+model NoteVersion {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  title     String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([noteId])
+  @@index([createdAt])
+}
+
+model NoteLink {
+  id           String   @id @default(cuid())
+  sourceNoteId String
+  targetNoteId String
+  sourceNote   Note     @relation("NoteSource", fields: [sourceNoteId], references: [id], onDelete: Cascade)
+  targetNote   Note     @relation("NoteTarget", fields: [targetNoteId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@unique([sourceNoteId, targetNoteId])
+  @@index([sourceNoteId])
+  @@index([targetNoteId])
 }
 
 model Document {
-  id            String                      @id @default(cuid())
+  id            String      @id @default(cuid())
   title         String
   fileUrl       String
-  fileType      String                      @default("application/octet-stream")
-  fileSize      Int                         @default(0)
-  extractedText String?                     @db.Text
+  fileType      String      @default("application/octet-stream")
+  fileSize      Int         @default(0)
+  extractedText String?     @db.Text
   summary       String?
-  embedding     Unsupported("vector(384)")?
   userId        String
-  user          User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId  String?
-  collection    Collection?                 @relation(fields: [collectionId], references: [id], onDelete: SetNull)
-  createdAt     DateTime                    @default(now())
-  updatedAt     DateTime                    @updatedAt
+  collection    Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@index([userId])
   @@index([collectionId])
 }
 
-
 model Bookmark {
-  id           String                      @id @default(cuid())
+  id           String      @id @default(cuid())
   title        String
   url          String
   description  String?
   summary      String?
-  embedding    Unsupported("vector(384)")?
   userId       String
-  user         User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId String?
-  collection   Collection?                 @relation(fields: [collectionId], references: [id], onDelete: SetNull)
-  createdAt    DateTime                    @default(now())
-  updatedAt    DateTime                    @updatedAt
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   @@index([userId])
   @@index([collectionId])

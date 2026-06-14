@@ -54,8 +54,8 @@ export function DashboardPage() {
   });
 
   const { data: activity, isLoading: activityLoading } = useQuery({
-    queryKey: ["recent-activity"],
-    queryFn: () => fetchRecentActivity(token),
+    queryKey: ["recent-activities", 8],
+    queryFn: () => fetchRecentActivity(token, 8),
     enabled: !!token,
   });
 
@@ -65,7 +65,8 @@ export function DashboardPage() {
     enabled: !!token,
   });
 
-  const activityCount = activity?.length || 0;
+  const activityItems = Array.isArray(activity) ? activity : (activity?.data ?? []);
+  const activityCount = activityItems.length;
   const contentCount =
     (recentContent?.recentNotes?.length || 0) +
     (recentContent?.recentDocuments?.length || 0) +
@@ -162,7 +163,7 @@ export function DashboardPage() {
             )}
           </div>
           <div className="dashboard-panel__body">
-            <ActivityFeed activities={activity} isLoading={activityLoading} />
+            <ActivityFeed activities={activityItems} isLoading={activityLoading} />
           </div>
         </div>
 

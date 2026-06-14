@@ -1,7 +1,7 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
 import { summarizeBookmark } from '../../lib/summarizer.js'
-import { storeEmbedding } from '../../lib/vector-search.js'
+import { activityService, ACTIVITY_TYPES } from '../activity/activity.service.js'
 
 function validateUrl(raw) {
   try {
@@ -120,8 +120,8 @@ export const bookmarkService = {
       select: bookmarkSelect,
     })
 
-    const embText = `${values.title} ${values.url} ${values.description ?? ''}`.trim()
-    storeEmbedding('Bookmark', bookmark.id, embText).catch(() => {})
+    activityService.log(userId, ACTIVITY_TYPES.BOOKMARK_ADDED, `Saved bookmark "${bookmark.title}"`)
+
     return bookmark
   },
 
@@ -166,8 +166,8 @@ export const bookmarkService = {
       select: bookmarkSelect,
     })
 
-    const embText = `${values.title} ${values.url} ${values.description ?? ''}`.trim()
-    storeEmbedding('Bookmark', id, embText).catch(() => {})
+    activityService.log(userId, ACTIVITY_TYPES.BOOKMARK_UPDATED, `Updated bookmark "${updated.title}"`)
+
     return updated
   },
 
@@ -201,6 +201,7 @@ export const bookmarkService = {
     }
 
     await prisma.bookmark.delete({ where: { id } })
+    activityService.log(userId, ACTIVITY_TYPES.BOOKMARK_DELETED, `Deleted a bookmark`)
 
     return { message: 'Bookmark deleted successfully.' }
   },

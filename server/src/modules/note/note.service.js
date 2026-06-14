@@ -1,7 +1,8 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
 import { summarizeNote } from '../../lib/summarizer.js'
-import { storeEmbedding } from '../../lib/vector-search.js'
+import { noteLinkService } from './note-link.service.js'
+import { activityService, ACTIVITY_TYPES } from '../activity/activity.service.js'
 
 function validateNotePayload(payload) {
   const title = payload.title?.trim()
@@ -104,7 +105,9 @@ export const noteService = {
       select: noteSelect,
     })
 
-    storeEmbedding('Note', note.id, `${values.title} ${values.content}`).catch(() => {})
+    noteLinkService.syncLinks(note.id, userId, values.content).catch(() => {})
+    activityService.log(userId, ACTIVITY_TYPES.NOTE_CREATED, `Created note "${note.title}"`)
+
     return note
   },
 
@@ -151,7 +154,9 @@ export const noteService = {
       select: noteSelect,
     })
 
-    storeEmbedding('Note', id, `${values.title} ${values.content}`).catch(() => {})
+    noteLinkService.syncLinks(id, userId, values.content).catch(() => {})
+    activityService.log(userId, ACTIVITY_TYPES.NOTE_UPDATED, `Updated note "${updated.title}"`)
+
     return updated
   },
 
@@ -188,6 +193,7 @@ export const noteService = {
     }
 
     await prisma.note.delete({ where: { id } })
+    activityService.log(userId, ACTIVITY_TYPES.NOTE_DELETED, `Deleted a note`)
 
     return { message: 'Note deleted successfully.' }
   },

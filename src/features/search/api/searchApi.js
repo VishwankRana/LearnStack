@@ -1,8 +1,10 @@
-import { apiRequest } from '../../../lib/api';
+import { apiRequest } from '../../../lib/api'
 
-export function fetchSearchResults(query, token) {
-  return apiRequest(`/search?q=${encodeURIComponent(query)}`, {
-    method: 'GET',
-    token,
-  });
+/**
+ * @param {string} token
+ * @param {{ q: string, page?: number, limit?: number }} params
+ */
+export async function searchAll(token, { q, page = 1, limit = 10 } = {}) {
+  const params = new URLSearchParams({ q, page, limit })
+  return apiRequest(`/search?${params}`, { token })
 }
