@@ -22,7 +22,7 @@ function QuizIcon() {
   );
 }
 
-export function StudyGeneratePanel({ sourceType, sourceId, disabled = false }) {
+export function StudyGeneratePanel({ sourceType, sourceId, disabled = false, usesExtractedText = false }) {
   const navigate = useNavigate();
   const { data: materials } = useStudyMaterials(sourceType, sourceId);
   const flashcardsMutation = useGenerateFlashcards();
@@ -61,6 +61,19 @@ export function StudyGeneratePanel({ sourceType, sourceId, disabled = false }) {
 
   const hasSavedMaterials = deckId || quizId;
 
+  function getHintText() {
+    if (disabled && usesExtractedText) {
+      return 'Extract text from this PDF first to generate quiz and flashcards.';
+    }
+    if (hasSavedMaterials) {
+      return 'Your flashcards and quiz are saved for this content. Open them anytime without regenerating.';
+    }
+    if (usesExtractedText) {
+      return 'Quiz and flashcards are generated from the extracted PDF text. This may take a few seconds.';
+    }
+    return 'AI will create study materials from your content. This may take a few seconds.';
+  }
+
   return (
     <div className="study-generate-panel">
       <div className="study-generate-panel__header">
@@ -95,9 +108,7 @@ export function StudyGeneratePanel({ sourceType, sourceId, disabled = false }) {
       )}
       {!error && (
         <p className="study-generate-panel__hint">
-          {hasSavedMaterials
-            ? 'Your flashcards and quiz are saved for this content. Open them anytime without regenerating.'
-            : 'AI will create study materials from your content. This may take a few seconds.'}
+          {getHintText()}
         </p>
       )}
     </div>

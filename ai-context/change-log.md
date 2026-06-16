@@ -2,6 +2,53 @@
 
 ---
 
+## 2026-06-17 — Document Summary & Quiz Align with Notes Pattern
+
+### Files Changed
+
+**Modified:**
+- `server/src/lib/summarizer.js` — document summary uses same structured study-guide prompt as notes (from extracted PDF text)
+- `src/features/documents/pages/DocumentViewPage.jsx` — markdown summary rendering matching notes page
+- `src/features/documents/documents.css` — summary panel styles aligned with notes
+- `src/features/study/components/StudyGeneratePanel.jsx` — document hints for PDF-extracted quiz/flashcards
+
+### Summary
+
+Document AI summary now produces and displays the same markdown study guide as notes, sourced from extracted PDF text. Quiz/flashcard panel clarifies that generation uses extracted PDF content. Notes summary behavior unchanged.
+
+### Impacted Modules
+
+- Documents, Study UI
+
+### Risk Level
+
+**Low**
+
+---
+
+## 2026-06-17 — Document Summary Requires Extracted PDF Text
+
+### Files Changed
+
+**Modified:**
+- `server/src/lib/summarizer.js` — `summarizeDocument` requires `extractedText`; removed title-only fallback
+- `server/src/modules/document/document.service.js` — validate extracted text before summarizing
+- `src/features/documents/pages/DocumentViewPage.jsx` — disable summary button without extracted text; updated messaging
+
+### Summary
+
+Document AI summaries now always use extracted PDF/document text. Notes summary behavior is unchanged.
+
+### Impacted Modules
+
+- Documents (summary only)
+
+### Risk Level
+
+**Low**
+
+---
+
 ## 2026-06-17 — Persist & Reuse AI Study Materials
 
 ### Files Changed

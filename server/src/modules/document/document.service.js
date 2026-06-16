@@ -194,6 +194,13 @@ export const documentService = {
       })
     }
 
+    if (!doc.extractedText?.trim()) {
+      throw new HttpError(
+        422,
+        'This document has no extracted text. Extract text from the PDF before generating a summary.',
+      )
+    }
+
     const summary = await summarizeDocument(doc.title, doc.extractedText)
 
     return prisma.document.update({

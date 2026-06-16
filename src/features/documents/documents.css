@@ -466,8 +466,11 @@
 
 /* — AI Summary Panel — */
 .document-view__summary-panel {
-  border-color: rgba(99, 102, 241, 0.18);
+  padding: 20px 24px;
+  border-radius: 18px;
+  border: 1px solid rgba(99, 102, 241, 0.18);
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.04), rgba(168, 85, 247, 0.03));
+  margin-bottom: 24px;
 }
 
 .document-view__summary-header {
@@ -475,7 +478,23 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+}
+
+.document-view__summary-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #6366f1;
+}
+
+.document-view__summary-title svg {
+  width: 16px;
+  height: 16px;
 }
 
 .document-view__summary-header .document-view__content-title {
@@ -493,9 +512,42 @@
 
 .document-view__summary-text {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.93rem;
   line-height: 1.75;
   color: var(--color-text-secondary);
+}
+
+.document-view__summary-panel .document-view__summary-preview {
+  min-height: unset;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 0;
+}
+
+.document-view__summary-preview h1,
+.document-view__summary-preview h2,
+.document-view__summary-preview h3 {
+  font-family: var(--font-heading);
+  margin: 1.25em 0 0.5em;
+}
+
+.document-view__summary-preview h1:first-child,
+.document-view__summary-preview h2:first-child {
+  margin-top: 0;
+}
+
+.document-view__summary-preview ul,
+.document-view__summary-preview ol {
+  padding-left: 1.25rem;
+}
+
+.document-view__summary-preview p {
+  margin: 0.75em 0;
+}
+
+.document-view__summary-preview p:first-child {
+  margin-top: 0;
 }
 
 .document-view__summary-empty {

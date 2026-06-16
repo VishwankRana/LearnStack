@@ -4,7 +4,7 @@ import { HttpError } from './http-error.js'
 const DOCUMENT_SYSTEM_PROMPT =
   'You are a concise summarization assistant. Produce clear, informative summaries in plain prose. No bullet lists, no headings, no preamble like "Here is a summary". Just the summary itself.'
 
-const NOTE_SYSTEM_PROMPT = `You are an expert study assistant. Transform the provided notes into a student-friendly study guide using the exact markdown structure below. Do not add any text before the first heading.
+const STUDY_GUIDE_SYSTEM_PROMPT = `You are an expert study assistant. Transform the provided content into a student-friendly study guide using the exact markdown structure below. Do not add any text before the first heading.
 
 # <Topic Title>
 
@@ -34,26 +34,28 @@ Common misunderstandings or errors to avoid (skip this section if not applicable
 ## Summary
 A final 5-bullet revision sheet.`
 
+const NOTE_SYSTEM_PROMPT = STUDY_GUIDE_SYSTEM_PROMPT
+
 /**
  * Summarize a document using its extracted text.
- * Falls back to title-based summary when no text is available.
  */
 export async function summarizeDocument(title, extractedText) {
-  if (!extractedText?.trim() && !title?.trim()) {
-    throw new HttpError(422, 'Nothing to summarize — the document has no extracted text.')
+  if (!extractedText?.trim()) {
+    throw new HttpError(
+      422,
+      'This document has no extracted text. Extract text from the PDF before generating a summary.',
+    )
   }
 
-  const content = extractedText?.trim()
-    ? `Document title: "${title}"\n\nContent:\n${extractedText.slice(0, 8000)}`
-    : `Document title: "${title}"\n\nNo text content was extracted from this document.`
+  const content = `Document title: "${title}"\n\nContent:\n${extractedText.trim().slice(0, 8000)}`
 
-  return chat([
-    { role: 'system', content: DOCUMENT_SYSTEM_PROMPT },
-    {
-      role: 'user',
-      content: `Summarize the following document in 2–4 sentences:\n\n${content}`,
-    },
-  ])
+  return chat(
+    [
+      { role: 'system', content: STUDY_GUIDE_SYSTEM_PROMPT },
+      { role: 'user', content },
+    ],
+    { maxTokens: 1500 },
+  )
 }
 
 /**

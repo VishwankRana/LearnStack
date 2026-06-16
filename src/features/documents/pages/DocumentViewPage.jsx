@@ -1,5 +1,7 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { Button } from '../../../components/ui/Button';
 import { EmptyState } from '../../../components/ui/EmptyState';
 import { Spinner } from '../../../components/ui/Spinner';
@@ -245,9 +247,9 @@ export function DocumentViewPage() {
       </div>
 
       {/* — AI Summary — */}
-      <div className="document-view__content document-view__summary-panel">
+      <div className="document-view__summary-panel">
         <div className="document-view__summary-header">
-          <h3 className="document-view__content-title">
+          <h3 className="document-view__summary-title">
             <SparklesIcon /> AI Summary
           </h3>
           {!document.summary && (
@@ -256,7 +258,7 @@ export function DocumentViewPage() {
               size="sm"
               onClick={() => summarizeMutation.mutate(document.id)}
               isLoading={summarizeMutation.isPending}
-              disabled={summarizeMutation.isPending}
+              disabled={summarizeMutation.isPending || !document.extractedText?.trim()}
             >
               <SparklesIcon /> Generate Summary
             </Button>
@@ -270,11 +272,17 @@ export function DocumentViewPage() {
         )}
 
         {document.summary ? (
-          <p className="document-view__summary-text">{document.summary}</p>
+          <div className="document-view__summary-text document-view__summary-preview">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {document.summary}
+            </ReactMarkdown>
+          </div>
         ) : (
           !summarizeMutation.isPending && (
             <p className="document-view__summary-empty">
-              No summary yet. Click &ldquo;Generate Summary&rdquo; to create one with AI.
+              {!document.extractedText?.trim()
+                ? 'Extract text from this document first, then generate an AI study guide from the PDF content.'
+                : 'No summary yet. Click "Generate Summary" to create one with AI.'}
             </p>
           )
         )}
@@ -288,6 +296,7 @@ export function DocumentViewPage() {
         sourceType="document"
         sourceId={document.id}
         disabled={!document.extractedText?.trim()}
+        usesExtractedText
       />
 
       {/* — Content — */}
