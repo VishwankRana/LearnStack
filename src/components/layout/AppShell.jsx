@@ -4,6 +4,7 @@ import { useAuth } from "../../context/useAuth";
 import { SearchModal } from "../../features/search/components/SearchModal";
 import "../../App.css";
 import "../../features/search/search.css";
+import logo from "../../assets/book-reader.svg";
 
 function SearchTriggerIcon() {
   return (
@@ -52,10 +53,10 @@ export function AppShell() {
         <header className="topbar">
           <div className="brand">
             <div className="brand__mark" aria-hidden="true">
-              MV
+              <img src={logo} alt="LearnStack" className="brand__logo" />
             </div>
             <div>
-              <h1 className="brand__title">MindVault</h1>
+              <h1 className="brand__title">LearnStack</h1>
             </div>
           </div>
 
