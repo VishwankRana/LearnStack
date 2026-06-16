@@ -57,3 +57,12 @@ export async function summarizeDocument(request, response) {
 
   response.json({ success: true, data: document })
 }
+
+export async function reextractDocumentText(request, response) {
+  const document = await documentService.reextractText(
+    request.params.id,
+    request.user.id,
+  )
+
+  response.json({ success: true, data: document })
+}

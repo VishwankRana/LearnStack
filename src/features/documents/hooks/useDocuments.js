@@ -6,6 +6,7 @@ import {
   uploadDocument,
   updateDocument,
   deleteDocument,
+  reextractDocumentText,
   summarizeDocument,
 } from '../api/documentsApi';
 
@@ -82,6 +83,21 @@ export function useSummarizeDocument() {
 
   return useMutation({
     mutationFn: (id) => summarizeDocument(id, token),
+    onSuccess: (updated) => {
+      if (updated?.id) {
+        queryClient.setQueryData([...DOCUMENTS_KEY, updated.id], updated);
+      }
+      queryClient.invalidateQueries({ queryKey: DOCUMENTS_KEY });
+    },
+  });
+}
+
+export function useReextractDocumentText() {
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id) => reextractDocumentText(id, token),
     onSuccess: (updated) => {
       if (updated?.id) {
         queryClient.setQueryData([...DOCUMENTS_KEY, updated.id], updated);

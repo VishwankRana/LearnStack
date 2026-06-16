@@ -7,11 +7,9 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { DeleteNoteDialog } from '../components/DeleteNoteDialog';
 import { useNote, useCreateNote, useUpdateNote, useDeleteNote, useSummarizeNote } from '../hooks/useNotes';
 import { useCollections } from '../../collections/hooks/useCollections';
-import { NoteLinksPanel } from '../components/NoteLinksPanel';
-import { WikiLinkDropdown } from '../components/WikiLinkDropdown';
-import { useWikiLinkAutocomplete } from '../hooks/useWikiLinkAutocomplete';
 import { VersionHistoryDrawer } from '../components/VersionHistoryDrawer';
 import { useCommitSnapshot } from '../hooks/useVersions';
+import { StudyGeneratePanel } from '../../study/components/StudyGeneratePanel';
 import '../notes.css';
 
 /* ── Icons ── */
@@ -266,9 +264,6 @@ export function NoteEditorPage() {
 
   const commitMutation = useCommitSnapshot(id);
 
-  /* — Wiki-link autocomplete — */
-  const wikiAC = useWikiLinkAutocomplete(textareaRef, content, setContent, id ?? null);
-
   /* — Seed form from fetched note — */
   useEffect(() => {
     if (existingNote && !initialized) {
@@ -362,10 +357,6 @@ export function NoteEditorPage() {
 
   /* — Tab key in textarea inserts spaces — */
   function handleTextareaKeyDown(e) {
-    // Give wiki-link autocomplete first priority on arrow/enter/escape/tab
-    wikiAC.onKeyDown(e);
-    if (e.defaultPrevented) return;
-
     if (e.key === 'Tab') {
       e.preventDefault();
       const el = e.target;
@@ -528,34 +519,16 @@ export function NoteEditorPage() {
           <>
             <MarkdownToolbar
               textareaRef={textareaRef}
-              onContentChange={(newVal) => {
-                setContent(newVal);
-                requestAnimationFrame(() => wikiAC.handleContentChange(newVal));
-              }}
+              onContentChange={setContent}
             />
             <textarea
               ref={textareaRef}
               className="note-editor__textarea"
               placeholder="Start writing… Markdown is supported."
               value={content}
-              onChange={(e) => {
-                setContent(e.target.value);
-                requestAnimationFrame(() => wikiAC.handleContentChange(e.target.value));
-              }}
-              onKeyUp={() => wikiAC.handleContentChange(content)}
-              onClick={() => wikiAC.handleContentChange(content)}
+              onChange={(e) => setContent(e.target.value)}
               onKeyDown={handleTextareaKeyDown}
               spellCheck
-            />
-            <WikiLinkDropdown
-              isOpen={wikiAC.isOpen}
-              suggestions={wikiAC.suggestions}
-              query={wikiAC.query}
-              activeIndex={wikiAC.activeIndex}
-              dropdownStyle={wikiAC.dropdownStyle}
-              isLoading={wikiAC.isLoading}
-              onSelect={wikiAC.onSelect}
-              onHover={wikiAC.setActiveIndex}
             />
           </>
         ) : (
@@ -578,15 +551,17 @@ export function NoteEditorPage() {
             <h3 className="note-editor__summary-title">
               <SparklesIcon /> AI Summary
             </h3>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => summarizeMutation.mutate(id)}
-              isLoading={summarizeMutation.isPending}
-              disabled={summarizeMutation.isPending}
-            >
-              {existingNote?.summary ? <><SparklesIcon /> Regenerate</> : <><SparklesIcon /> Generate Summary</>}
-            </Button>
+            {!existingNote?.summary && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => summarizeMutation.mutate(id)}
+                isLoading={summarizeMutation.isPending}
+                disabled={summarizeMutation.isPending}
+              >
+                <SparklesIcon /> Generate Summary
+              </Button>
+            )}
           </div>
 
           {summarizeMutation.isError && (
@@ -615,8 +590,14 @@ export function NoteEditorPage() {
         </div>
       )}
 
-      {/* — Note Links & Backlinks (existing notes only) — */}
-      {!isNew && <NoteLinksPanel noteId={id} />}
+      {/* — AI Study Materials (existing notes only) — */}
+      {!isNew && (
+        <StudyGeneratePanel
+          sourceType="note"
+          sourceId={id}
+          disabled={!content.trim()}
+        />
+      )}
 
       {/* — Version History Drawer — */}
       <VersionHistoryDrawer

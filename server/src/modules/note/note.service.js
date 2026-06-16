@@ -1,7 +1,6 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
 import { summarizeNote } from '../../lib/summarizer.js'
-import { noteLinkService } from './note-link.service.js'
 import { activityService, ACTIVITY_TYPES } from '../activity/activity.service.js'
 
 function validateNotePayload(payload) {
@@ -105,7 +104,6 @@ export const noteService = {
       select: noteSelect,
     })
 
-    noteLinkService.syncLinks(note.id, userId, values.content).catch(() => {})
     activityService.log(userId, ACTIVITY_TYPES.NOTE_CREATED, `Created note "${note.title}"`)
 
     return note
@@ -154,7 +152,6 @@ export const noteService = {
       select: noteSelect,
     })
 
-    noteLinkService.syncLinks(id, userId, values.content).catch(() => {})
     activityService.log(userId, ACTIVITY_TYPES.NOTE_UPDATED, `Updated note "${updated.title}"`)
 
     return updated
@@ -163,11 +160,18 @@ export const noteService = {
   async summarize(id, userId) {
     const note = await prisma.note.findUnique({
       where: { id },
-      select: { userId: true, title: true, content: true },
+      select: { userId: true, title: true, content: true, summary: true },
     })
 
     if (!note) throw new HttpError(404, 'Note not found.')
     if (note.userId !== userId) throw new HttpError(403, 'You do not have access to this note.')
+
+    if (note.summary?.trim()) {
+      return prisma.note.findUnique({
+        where: { id },
+        select: noteSelect,
+      })
+    }
 
     const summary = await summarizeNote(note.title, note.content)
 

@@ -4,8 +4,6 @@ import {
   createNote,
   deleteNote,
   getNote,
-  getBacklinks,
-  getLinkedNotes,
   listNotes,
   summarizeNote,
   updateNote,
@@ -18,8 +16,6 @@ noteRouter.use(authenticate)
 
 noteRouter.get('/', listNotes)
 noteRouter.get('/:id', getNote)
-noteRouter.get('/:id/linked-notes', getLinkedNotes)
-noteRouter.get('/:id/backlinks', getBacklinks)
 noteRouter.get('/:id/versions', listVersions)
 noteRouter.get('/:id/versions/:versionId', getVersion)
 noteRouter.post('/', createNote)

@@ -181,17 +181,60 @@ export const documentService = {
   async summarize(id, userId) {
     const doc = await prisma.document.findUnique({
       where: { id },
-      select: { userId: true, title: true, extractedText: true },
+      select: { userId: true, title: true, extractedText: true, summary: true },
     })
 
     if (!doc) throw new HttpError(404, 'Document not found.')
     if (doc.userId !== userId) throw new HttpError(403, 'You do not have access to this document.')
+
+    if (doc.summary?.trim()) {
+      return prisma.document.findUnique({
+        where: { id },
+        select: documentSelect,
+      })
+    }
 
     const summary = await summarizeDocument(doc.title, doc.extractedText)
 
     return prisma.document.update({
       where: { id },
       data: { summary },
+      select: documentSelect,
+    })
+  },
+
+  async reextractText(id, userId) {
+    const doc = await prisma.document.findUnique({
+      where: { id },
+      select: { userId: true, fileUrl: true, fileType: true },
+    })
+
+    if (!doc) {
+      throw new HttpError(404, 'Document not found.')
+    }
+
+    if (doc.userId !== userId) {
+      throw new HttpError(403, 'You do not have access to this document.')
+    }
+
+    const response = await fetch(doc.fileUrl)
+    if (!response.ok) {
+      throw new HttpError(502, 'Failed to download the document file for text extraction.')
+    }
+
+    const buffer = Buffer.from(await response.arrayBuffer())
+    const extractedText = await extractText(buffer, doc.fileType)
+
+    if (!extractedText) {
+      throw new HttpError(
+        422,
+        'No text could be extracted from this document. The file may be scanned/image-based or unsupported.',
+      )
+    }
+
+    return prisma.document.update({
+      where: { id },
+      data: { extractedText },
       select: documentSelect,
     })
   },

@@ -14,6 +14,8 @@ import { DocumentsPage } from '../features/documents/pages/DocumentsPage'
 import { DocumentViewPage } from '../features/documents/pages/DocumentViewPage'
 import { SearchPage } from '../features/search/pages/SearchPage'
 import { ActivityPage } from '../features/activity/pages/ActivityPage'
+import { FlashcardStudyPage } from '../features/study/pages/FlashcardStudyPage'
+import { QuizPage } from '../features/study/pages/QuizPage'
 
 export const router = createBrowserRouter([
   {
@@ -78,6 +80,14 @@ export const router = createBrowserRouter([
           {
             path: 'app/activity',
             element: <ActivityPage />,
+          },
+          {
+            path: 'app/study/flashcards/:id',
+            element: <FlashcardStudyPage />,
+          },
+          {
+            path: 'app/study/quizzes/:id',
+            element: <QuizPage />,
           },
         ],
       },

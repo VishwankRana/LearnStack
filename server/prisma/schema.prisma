@@ -9,19 +9,21 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(cuid())
-  name        String
-  email       String       @unique
-  password    String
-  avatar      String?
-  bio         String?
-  collections Collection[]
-  notes       Note[]
-  bookmarks   Bookmark[]
-  documents   Document[]
-  activities  Activity[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id              String           @id @default(cuid())
+  name            String
+  email           String           @unique
+  password        String
+  avatar          String?
+  bio             String?
+  collections     Collection[]
+  notes           Note[]
+  bookmarks       Bookmark[]
+  documents       Document[]
+  activities      Activity[]
+  flashcardDecks  FlashcardDeck[]
+  quizzes         Quiz[]
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 }
 
 model Collection {
@@ -49,8 +51,6 @@ model Note {
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId String?
   collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
-  outgoingLinks NoteLink[]    @relation("NoteSource")
-  incomingLinks NoteLink[]    @relation("NoteTarget")
   versions      NoteVersion[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -69,19 +69,6 @@ model NoteVersion {
 
   @@index([noteId])
   @@index([createdAt])
-}
-
-model NoteLink {
-  id           String   @id @default(cuid())
-  sourceNoteId String
-  targetNoteId String
-  sourceNote   Note     @relation("NoteSource", fields: [sourceNoteId], references: [id], onDelete: Cascade)
-  targetNote   Note     @relation("NoteTarget", fields: [targetNoteId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
-
-  @@unique([sourceNoteId, targetNoteId])
-  @@index([sourceNoteId])
-  @@index([targetNoteId])
 }
 
 model Document {
@@ -131,4 +118,58 @@ model Activity {
 
   @@index([userId])
   @@index([createdAt])
+}
+
+model FlashcardDeck {
+  id         String      @id @default(cuid())
+  title      String
+  sourceType String
+  sourceId   String
+  userId     String
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  flashcards Flashcard[]
+  createdAt  DateTime    @default(now())
+
+  @@index([userId])
+  @@index([sourceType, sourceId])
+}
+
+model Flashcard {
+  id        String        @id @default(cuid())
+  question  String        @db.Text
+  answer    String        @db.Text
+  deckId    String
+  deck      FlashcardDeck @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  createdAt DateTime      @default(now())
+
+  @@index([deckId])
+}
+
+model Quiz {
+  id         String         @id @default(cuid())
+  title      String
+  sourceType String
+  sourceId   String
+  userId     String
+  user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  questions  QuizQuestion[]
+  createdAt  DateTime       @default(now())
+
+  @@index([userId])
+  @@index([sourceType, sourceId])
+}
+
+model QuizQuestion {
+  id            String @id @default(cuid())
+  question      String @db.Text
+  optionA       String @db.Text
+  optionB       String @db.Text
+  optionC       String @db.Text
+  optionD       String @db.Text
+  correctAnswer String
+  explanation   String @db.Text
+  quizId        String
+  quiz          Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
 }

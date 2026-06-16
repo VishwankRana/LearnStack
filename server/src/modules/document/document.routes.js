@@ -6,6 +6,7 @@ import {
   deleteDocument,
   getDocument,
   listDocuments,
+  reextractDocumentText,
   summarizeDocument,
   updateDocument,
 } from './document.controller.js'
@@ -18,5 +19,6 @@ documentRouter.get('/', listDocuments)
 documentRouter.get('/:id', getDocument)
 documentRouter.post('/', upload.single('file'), createDocument)
 documentRouter.post('/:id/summarize', summarizeDocument)
+documentRouter.post('/:id/reextract', reextractDocumentText)
 documentRouter.patch('/:id', updateDocument)
 documentRouter.delete('/:id', deleteDocument)

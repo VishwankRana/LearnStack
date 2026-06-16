@@ -3,12 +3,23 @@
  * Supports PDF, DOCX, and TXT files.
  * Returns empty string on failure — never throws.
  */
+
+async function extractPdfText(buffer) {
+  const { PDFParse } = await import('pdf-parse')
+  const parser = new PDFParse({ data: buffer })
+
+  try {
+    const result = await parser.getText()
+    return result.text?.trim() || ''
+  } finally {
+    await parser.destroy()
+  }
+}
+
 export async function extractText(buffer, mimeType) {
   try {
     if (mimeType === 'application/pdf') {
-      const pdfParse = (await import('pdf-parse')).default
-      const result = await pdfParse(buffer)
-      return result.text?.trim() || ''
+      return await extractPdfText(buffer)
     }
 
     if (
@@ -26,7 +37,7 @@ export async function extractText(buffer, mimeType) {
 
     return ''
   } catch (error) {
-    console.error('Text extraction failed:', error.message)
+    console.error(`Text extraction failed (${mimeType}):`, error.message)
     return ''
   }
 }

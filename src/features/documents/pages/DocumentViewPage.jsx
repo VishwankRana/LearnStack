@@ -12,8 +12,9 @@ import {
 } from '../../../components/ui/Dialog';
 import { Input } from '../../../components/ui/Input';
 import { DeleteDocumentDialog } from '../components/DeleteDocumentDialog';
-import { useDocument, useUpdateDocument, useDeleteDocument, useSummarizeDocument } from '../hooks/useDocuments';
+import { useDocument, useUpdateDocument, useDeleteDocument, useSummarizeDocument, useReextractDocumentText } from '../hooks/useDocuments';
 import { useCollections } from '../../collections/hooks/useCollections';
+import { StudyGeneratePanel } from '../../study/components/StudyGeneratePanel';
 import '../documents.css';
 
 function ArrowLeftIcon() {
@@ -109,6 +110,7 @@ export function DocumentViewPage() {
   const updateMutation = useUpdateDocument();
   const deleteMutation = useDeleteDocument();
   const summarizeMutation = useSummarizeDocument();
+  const reextractMutation = useReextractDocumentText();
 
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -248,15 +250,17 @@ export function DocumentViewPage() {
           <h3 className="document-view__content-title">
             <SparklesIcon /> AI Summary
           </h3>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => summarizeMutation.mutate(document.id)}
-            isLoading={summarizeMutation.isPending}
-            disabled={summarizeMutation.isPending}
-          >
-            {document.summary ? <><RefreshIcon /> Regenerate</> : <><SparklesIcon /> Generate Summary</>}
-          </Button>
+          {!document.summary && (
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => summarizeMutation.mutate(document.id)}
+              isLoading={summarizeMutation.isPending}
+              disabled={summarizeMutation.isPending}
+            >
+              <SparklesIcon /> Generate Summary
+            </Button>
+          )}
         </div>
 
         {summarizeMutation.isError && (
@@ -280,6 +284,12 @@ export function DocumentViewPage() {
         )}
       </div>
 
+      <StudyGeneratePanel
+        sourceType="document"
+        sourceId={document.id}
+        disabled={!document.extractedText?.trim()}
+      />
+
       {/* — Content — */}
       {isPdf && (
         <div className="document-view__content">
@@ -292,22 +302,42 @@ export function DocumentViewPage() {
         </div>
       )}
 
+      {!document.extractedText && (
+        <div className="document-view__content document-view__extract-panel">
+          <div className="document-view__summary-header">
+            <h3 className="document-view__content-title">Extracted Text</h3>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => reextractMutation.mutate(document.id)}
+              isLoading={reextractMutation.isPending}
+              disabled={reextractMutation.isPending}
+            >
+              <RefreshIcon /> Extract Text
+            </Button>
+          </div>
+          {reextractMutation.isError && (
+            <p className="document-view__summary-error">
+              {reextractMutation.error?.message ?? 'Text extraction failed. Please try again.'}
+            </p>
+          )}
+          {!reextractMutation.isPending && !reextractMutation.isError && (
+            <p className="document-view__summary-empty">
+              No text extracted yet. Click &ldquo;Extract Text&rdquo; to parse this document for AI summary, quizzes, and flashcards.
+            </p>
+          )}
+          {reextractMutation.isPending && (
+            <p className="document-view__summary-empty">Extracting text&hellip;</p>
+          )}
+        </div>
+      )}
+
       {document.extractedText && (
         <div className="document-view__content">
           <h3 className="document-view__content-title">Extracted Text</h3>
           <div className="document-view__extracted-text">
             {document.extractedText}
           </div>
-        </div>
-      )}
-
-      {!isPdf && !document.extractedText && (
-        <div className="document-view__content">
-          <EmptyState
-            icon={<FileTextIcon />}
-            title="No text extracted"
-            description="Text extraction was not available for this file."
-          />
         </div>
       )}
 

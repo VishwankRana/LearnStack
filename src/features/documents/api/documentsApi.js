@@ -31,3 +31,7 @@ export function deleteDocument(id, token) {
 export function summarizeDocument(id, token) {
   return apiRequest(`/documents/${id}/summarize`, { method: 'POST', token });
 }
+
+export function reextractDocumentText(id, token) {
+  return apiRequest(`/documents/${id}/reextract`, { method: 'POST', token });
+}
