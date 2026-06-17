@@ -1,5 +1,6 @@
 import { HttpError } from '../../lib/http-error.js'
 import { prisma } from '../../lib/prisma.js'
+import { deleteFile } from '../../lib/storage.js'
 import { activityService, ACTIVITY_TYPES } from '../activity/activity.service.js'
 
 function validateCollectionPayload(payload) {
@@ -151,8 +152,23 @@ export const collectionService = {
       throw new HttpError(403, 'You do not have access to this collection.')
     }
 
+    const documents = await prisma.document.findMany({
+      where: { collectionId: id },
+      select: { fileUrl: true },
+    })
+
+    for (const doc of documents) {
+      await deleteFile(doc.fileUrl)
+    }
+
     await prisma.collection.delete({ where: { id } })
-    activityService.log(userId, ACTIVITY_TYPES.COLLECTION_DELETED, `Deleted collection "${existing.name}"`)
+
+    activityService.log(
+      userId,
+      ACTIVITY_TYPES.COLLECTION_DELETED,
+      `Deleted collection "${existing.name}"`,
+      documents.length > 0 ? `Including ${documents.length} document file(s)` : null,
+    )
 
     return { message: 'Collection deleted successfully.' }
   },

@@ -20,6 +20,17 @@
   padding: 32px 0 56px;
 }
 
+.app-shell__inner--auth {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.app-shell--auth .app-shell__backdrop {
+  background: rgba(245, 247, 250, 0.98);
+}
+
 .topbar {
   display: flex;
   align-items: center;
@@ -43,15 +54,11 @@
 .brand__mark {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #0f172a, #2563eb);
-  color: #f8fafc;
-  font-family: var(--font-heading);
-  font-size: 1.2rem;
-  font-weight: 700;
-  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.28);
+  height: 55px;
+  width: 55px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(15, 23, 42, 0.06);
 }
 
 .brand__eyebrow,

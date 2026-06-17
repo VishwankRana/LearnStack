@@ -2,6 +2,177 @@
 
 ---
 
+## 2026-06-17 — Note Editor Default Preview Mode
+
+### Files Changed
+
+**Modified:**
+- `src/features/notes/pages/NoteEditorPage.jsx` — default editor mode set to preview
+
+### Summary
+
+Opening a note in the editor now shows the Preview tab by default instead of Write.
+
+### Impacted Modules
+
+- Notes
+
+### Risk Level
+
+**Low**
+
+---
+
+## 2026-06-17 — Auth Form Centering & Icons
+
+### Files Changed
+
+**Added:**
+- `src/features/auth/components/AuthFormIcons.jsx`
+
+**Modified:**
+- `src/features/auth/components/AuthLayout.jsx` — optional form icon at top of card
+- `src/features/auth/auth.css` — centered card content and icon styling
+- `src/features/auth/pages/LoginPage.jsx` — login form icon
+- `src/features/auth/pages/RegisterPage.jsx` — register form icon
+
+### Summary
+
+Centered auth card content and added distinct SVG icons at the top of the login and signup forms.
+
+### Impacted Modules
+
+- Auth
+
+### Risk Level
+
+**Low**
+
+---
+
+## 2026-06-17 — Public Pages UI Refinement
+
+### Files Changed
+
+**Modified:**
+- `src/components/layout/AppShell.jsx` — hide topbar on home, login, and register
+- `src/features/auth/components/AuthLayout.jsx` — centered form, logo top-left, removed aside panel
+- `src/features/auth/auth.css` — flat layout styling, no gradients
+- `src/features/home/pages/HomePage.jsx` — page header with nav, SVG icons instead of emojis
+- `src/features/home/home.css` — solid colors, feature icon styling, home header
+- `src/App.css` — flat auth shell backdrop
+
+### Summary
+
+Removed the global top header from the home page and simplified auth pages to a centered form with logo in the top-left corner. Replaced gradient styling and emoji feature icons with solid colors and shared SVG icons.
+
+### Impacted Modules
+
+- Auth, Home, App shell
+
+### Risk Level
+
+**Low**
+
+---
+
+## 2026-06-17 — Auth & Home Page UI Refresh
+
+### Files Changed
+
+**Added:**
+- `src/features/auth/components/AuthLayout.jsx`
+- `src/features/auth/auth.css`
+- `src/features/home/home.css`
+
+**Modified:**
+- `src/components/layout/AppShell.jsx` — hide topbar on login/register
+- `src/features/auth/pages/LoginPage.jsx` — split auth layout, ui components
+- `src/features/auth/pages/RegisterPage.jsx` — split auth layout, ui components
+- `src/features/home/pages/HomePage.jsx` — redesigned landing page
+- `src/App.css` — auth shell full-width styles
+
+### Summary
+
+Removed the top header from login and register pages. Redesigned auth forms with a split-panel layout and shared UI inputs. Improved the home page with hero, feature cards, and CTA section.
+
+### Impacted Modules
+
+- Auth, Home, App shell
+
+### Risk Level
+
+**Low**
+
+---
+
+## 2026-06-17 — Cascade Delete Notes & Documents with Collection
+
+### Files Changed
+
+**Added:**
+- `server/prisma/migrations/20260617150000_cascade_delete_collection_content/migration.sql`
+
+**Modified:**
+- `server/prisma/schema.prisma` — `Note` and `Document` use `onDelete: Cascade` on `collectionId`
+- `server/src/modules/collection/collection.service.js` — delete document storage files before collection delete
+
+### Summary
+
+Deleting a collection now deletes all notes and documents in that collection. Document files are removed from storage first. Bookmarks remain and are unlinked (`SetNull` unchanged).
+
+### Impacted Modules
+
+- Collections, Notes, Documents, Database
+
+### Risk Level
+
+**Medium** — requires migration; deleting a collection is destructive for its notes and documents.
+
+---
+
+## 2026-06-17 — Dashboard Analytics Section
+
+### Files Changed
+
+**Added:**
+- `server/prisma/migrations/20260617140000_add_quiz_attempts/migration.sql`
+- `server/src/modules/analytics/analytics.service.js`
+- `server/src/modules/analytics/analytics.controller.js`
+- `server/src/modules/analytics/analytics.routes.js`
+- `src/features/dashboard/api/analyticsApi.js`
+- `src/features/dashboard/hooks/useAnalytics.js`
+- `src/features/dashboard/components/DashboardAnalyticsSection.jsx`
+- `src/features/dashboard/components/ContentGrowthChart.jsx`
+- `src/features/dashboard/components/StudyHeatmap.jsx`
+- `src/features/dashboard/components/QuizPerformanceChart.jsx`
+
+**Modified:**
+- `server/prisma/schema.prisma` — added `QuizAttempt` model
+- `server/src/routes/index.js` — mounted `/analytics` router
+- `server/src/modules/activity/activity.service.js` — `FLASHCARD_REVIEWED`, `QUIZ_ATTEMPTED`
+- `server/src/modules/study/study.service.js` — record review/attempt endpoints
+- `server/src/modules/study/study.controller.js`, `study.routes.js`
+- `src/features/dashboard/pages/DashboardPage.jsx` — analytics section
+- `src/features/dashboard/dashboard.css` — analytics styles
+- `src/features/study/pages/QuizPage.jsx`, `FlashcardStudyPage.jsx` — track activity
+- `src/features/study/api/studyApi.js`, `hooks/useStudy.js`
+- `package.json` — added `recharts`
+
+### Summary
+
+Added dashboard analytics: content growth line chart (notes/documents/bookmarks per week), GitHub-style study activity heatmap, and quiz performance chart with average/highest scores. Quiz attempts and flashcard reviews are persisted for analytics.
+
+### Impacted Modules
+
+- Analytics (new), Dashboard, Study, Database
+
+### Risk Level
+
+**Medium** — requires migration `20260617140000_add_quiz_attempts` and `npm install`.
+
+---
+
 ## 2026-06-17 — Document Summary & Quiz Align with Notes Pattern
 
 ### Files Changed

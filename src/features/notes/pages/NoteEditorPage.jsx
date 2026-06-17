@@ -248,7 +248,7 @@ export function NoteEditorPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [collectionId, setCollectionId] = useState(() => searchParams.get('collectionId') ?? '');
-  const [mode, setMode] = useState('write');
+  const [mode, setMode] = useState('preview');
   const [saveStatus, setSaveStatus] = useState('idle');
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [versionDrawerOpen, setVersionDrawerOpen] = useState(false);

@@ -1,124 +1,94 @@
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../../context/useAuth";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
+import { Textarea } from '../../../components/ui/Textarea';
+import { useAuth } from '../../../context/useAuth';
+import { AuthLayout } from '../components/AuthLayout';
+import { RegisterFormIcon } from '../components/AuthFormIcons';
+import '../auth.css';
 
 export function RegisterPage() {
   const { register: registerAccount } = useAuth();
   const navigate = useNavigate();
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
   } = useForm({
     defaultValues: {
-      name: "",
-      email: "",
-      password: "",
-      avatar: "",
-      bio: "",
+      name: '',
+      email: '',
+      password: '',
+      avatar: '',
+      bio: '',
     },
   });
 
   async function onSubmit(values) {
     try {
-      setErrorMessage("");
+      setErrorMessage('');
       await registerAccount(values);
-      navigate("/app", { replace: true });
+      navigate('/app', { replace: true });
     } catch (error) {
       setErrorMessage(error.message);
     }
   }
 
   return (
-    <section className="auth-page">
-      <div className="auth-card auth-card--wide">
-        <div className="auth-card__copy">
-          <h2 className="auth-card__title">Create your account</h2>
-        </div>
-
-        <form
-          className="auth-form auth-form--grid"
-          onSubmit={handleSubmit(onSubmit)}
-        >
-          <label className="field">
-            <span>Name</span>
-            <input
-              type="text"
-              placeholder="Vishw"
-              {...register("name", { required: "Name is required." })}
-            />
-            {errors.name ? (
-              <small className="field__error">{errors.name.message}</small>
-            ) : null}
-          </label>
-
-          <label className="field">
-            <span>Email</span>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              {...register("email", { required: "Email is required." })}
-            />
-            {errors.email ? (
-              <small className="field__error">{errors.email.message}</small>
-            ) : null}
-          </label>
-
-          <label className="field">
-            <span>Password</span>
-            <input
-              type="password"
-              placeholder="Minimum 8 characters"
-              {...register("password", {
-                required: "Password is required.",
-                minLength: {
-                  value: 8,
-                  message: "Password must be at least 8 characters.",
-                },
-              })}
-            />
-            {errors.password ? (
-              <small className="field__error">{errors.password.message}</small>
-            ) : null}
-          </label>
-
-          <label className="field">
-            <span>Avatar URL</span>
-            <input
-              type="url"
-              placeholder="https://example.com/avatar.jpg"
-              {...register("avatar")}
-            />
-          </label>
-
-          <label className="field field--full">
-            <span>Bio</span>
-            <textarea
-              placeholder="Tell MindVault a bit about yourself."
-              rows="4"
-              {...register("bio")}
-            />
-          </label>
-
-          {errorMessage ? (
-            <p className="auth-form__error field--full">{errorMessage}</p>
-          ) : null}
-
-          <button
-            className="button button--primary auth-form__submit field--full"
-            disabled={isSubmitting}
-            type="submit"
-          >
-            {isSubmitting ? "Creating account..." : "Create account"}
-          </button>
-        </form>
-
-        <p className="auth-card__footer">
+    <AuthLayout
+      icon={RegisterFormIcon}
+      title="Create your account"
+      subtitle="Start organizing notes, documents, and AI-powered study tools."
+      footer={
+        <>
           Already have an account? <Link to="/login">Sign in</Link>
-        </p>
-      </div>
-    </section>
+        </>
+      }
+    >
+      <form className="auth-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Input
+          label="Full name"
+          type="text"
+          placeholder="Your name"
+          autoComplete="name"
+          error={errors.name?.message}
+          {...register('name', { required: 'Name is required.' })}
+        />
+
+        <Input
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register('email', { required: 'Email is required.' })}
+        />
+
+        <Input
+          label="Password"
+          type="password"
+          placeholder="Minimum 8 characters"
+          autoComplete="new-password"
+          error={errors.password?.message}
+          helperText="Use at least 8 characters."
+          {...register('password', {
+            required: 'Password is required.',
+            minLength: {
+              value: 8,
+              message: 'Password must be at least 8 characters.',
+            },
+          })}
+        />
+
+        {errorMessage ? <p className="auth-form__error">{errorMessage}</p> : null}
+
+        <Button type="submit" variant="primary" size="lg" fullWidth isLoading={isSubmitting}>
+          {isSubmitting ? 'Creating account…' : 'Create account'}
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

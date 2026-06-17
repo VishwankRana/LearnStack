@@ -36,3 +36,15 @@ export function generateQuiz({ sourceType, sourceId }, token) {
     body: { sourceType, sourceId },
   });
 }
+
+export function recordFlashcardReview(deckId, token) {
+  return apiRequest(`/study/flashcards/${deckId}/review`, { method: 'POST', token });
+}
+
+export function recordQuizAttempt(quizId, { score, total }, token) {
+  return apiRequest(`/study/quizzes/${quizId}/attempt`, {
+    method: 'POST',
+    token,
+    body: { score, total },
+  });
+}

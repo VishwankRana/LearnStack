@@ -440,4 +440,54 @@ export const studyService = {
 
     return { quizId: quiz.id }
   },
+
+  async recordFlashcardReview(deckId, userId) {
+    await assertDeckOwnership(deckId, userId)
+
+    const deck = await prisma.flashcardDeck.findUnique({
+      where: { id: deckId },
+      select: { title: true },
+    })
+
+    activityService.log(
+      userId,
+      ACTIVITY_TYPES.FLASHCARD_REVIEWED,
+      `Reviewed flashcards "${deck.title}"`,
+    )
+
+    return { recorded: true }
+  },
+
+  async recordQuizAttempt(quizId, userId, { score, total }) {
+    await assertQuizOwnership(quizId, userId)
+
+    const safeScore = Math.max(0, parseInt(score) || 0)
+    const safeTotal = Math.max(1, parseInt(total) || 1)
+    const percent = Math.round((safeScore / safeTotal) * 100)
+
+    const quiz = await prisma.quiz.findUnique({
+      where: { id: quizId },
+      select: { title: true },
+    })
+
+    const attempt = await prisma.quizAttempt.create({
+      data: {
+        quizId,
+        userId,
+        score: safeScore,
+        total: safeTotal,
+        percent,
+      },
+      select: { id: true, score: true, total: true, percent: true, createdAt: true },
+    })
+
+    activityService.log(
+      userId,
+      ACTIVITY_TYPES.QUIZ_ATTEMPTED,
+      `Completed quiz "${quiz.title}"`,
+      `${safeScore}/${safeTotal} (${percent}%)`,
+    )
+
+    return attempt
+  },
 }

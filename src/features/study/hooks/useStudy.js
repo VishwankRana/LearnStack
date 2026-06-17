@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { ANALYTICS_KEY } from '../../dashboard/hooks/useAnalytics';
 import { useAuth } from '../../../context/useAuth';
 import {
   fetchFlashcardDeck,
@@ -8,6 +9,8 @@ import {
   fetchStudyMaterials,
   generateFlashcards,
   generateQuiz,
+  recordFlashcardReview,
+  recordQuizAttempt,
 } from '../api/studyApi';
 
 export const FLASHCARD_DECKS_KEY = ['flashcard-decks'];
@@ -96,6 +99,30 @@ export function useGenerateQuiz() {
           queryKey: [...STUDY_MATERIALS_KEY, payload.sourceType, payload.sourceId],
         });
       }
+    },
+  });
+}
+
+export function useRecordFlashcardReview() {
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (deckId) => recordFlashcardReview(deckId, token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ANALYTICS_KEY });
+    },
+  });
+}
+
+export function useRecordQuizAttempt() {
+  const { token } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ quizId, score, total }) => recordQuizAttempt(quizId, { score, total }, token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ANALYTICS_KEY });
     },
   });
 }

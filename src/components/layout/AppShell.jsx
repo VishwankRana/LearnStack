@@ -1,10 +1,10 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router-dom";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/useAuth";
 import { SearchModal } from "../../features/search/components/SearchModal";
 import "../../App.css";
 import "../../features/search/search.css";
-import logo from "../../assets/book-reader.svg";
+import logo from "../../assets/studysmarter-logo.svg";
 
 function SearchTriggerIcon() {
   return (
@@ -18,6 +18,8 @@ function SearchTriggerIcon() {
 export function AppShell() {
   const { isAuthenticated, logout, user } = useAuth();
   const [searchOpen, setSearchOpen] = useState(false);
+  const location = useLocation();
+  const hideTopbar = ['/', '/login', '/register'].includes(location.pathname);
 
   const openSearch = useCallback(() => setSearchOpen(true), []);
   const closeSearch = useCallback(() => setSearchOpen(false), []);
@@ -47,9 +49,10 @@ export function AppShell() {
       ];
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${hideTopbar ? 'app-shell--auth' : ''}`}>
       <div className="app-shell__backdrop" aria-hidden="true" />
-      <div className="app-shell__inner">
+      <div className={`app-shell__inner ${hideTopbar ? 'app-shell__inner--auth' : ''}`}>
+        {!hideTopbar && (
         <header className="topbar">
           <div className="brand">
             <div className="brand__mark" aria-hidden="true">
@@ -87,6 +90,7 @@ export function AppShell() {
             ) : null}
           </nav>
         </header>
+        )}
 
         <Outlet />
       </div>

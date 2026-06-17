@@ -8,6 +8,7 @@ import {
 import { ActivityFeed } from "../components/ActivityFeed";
 import { RecentContent } from "../components/RecentContent";
 import { StatsCard } from "../components/StatsCard";
+import { DashboardAnalyticsSection } from "../components/DashboardAnalyticsSection";
 import {
   ActivityIcon,
   ContentIcon,
@@ -145,6 +146,8 @@ export function DashboardPage() {
           isLoading={statsLoading}
         />
       </div>
+
+      <DashboardAnalyticsSection />
 
       {/* — Activity & Recent Content — */}
       <div className="dashboard-content">

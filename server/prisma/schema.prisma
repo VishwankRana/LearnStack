@@ -22,6 +22,7 @@ model User {
   activities      Activity[]
   flashcardDecks  FlashcardDeck[]
   quizzes         Quiz[]
+  quizAttempts    QuizAttempt[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
@@ -50,7 +51,7 @@ model Note {
   userId       String
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId String?
-  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   versions      NoteVersion[]
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
@@ -82,7 +83,7 @@ model Document {
   userId        String
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   collectionId  String?
-  collection    Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  collection    Collection? @relation(fields: [collectionId], references: [id], onDelete: Cascade)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
 
@@ -153,6 +154,7 @@ model Quiz {
   userId     String
   user       User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   questions  QuizQuestion[]
+  attempts   QuizAttempt[]
   createdAt  DateTime       @default(now())
 
   @@index([userId])
@@ -172,4 +174,20 @@ model QuizQuestion {
   quiz          Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
 
   @@index([quizId])
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int
+  total     Int
+  percent   Int
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([createdAt])
 }

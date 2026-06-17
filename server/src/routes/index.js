@@ -10,6 +10,7 @@ import { activityRouter } from '../modules/activity/activity.routes.js'
 import { healthRouter } from './health.js'
 import { systemRouter } from '../modules/system/system.routes.js'
 import { studyRouter } from '../modules/study/study.routes.js'
+import { analyticsRouter } from '../modules/analytics/analytics.routes.js'
 
 export const apiRouter = Router()
 
@@ -24,3 +25,4 @@ apiRouter.use('/activities', activityRouter)
 apiRouter.use('/health', healthRouter)
 apiRouter.use('/system', systemRouter)
 apiRouter.use('/study', studyRouter)
+apiRouter.use('/analytics', analyticsRouter)

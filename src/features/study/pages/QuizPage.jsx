@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
 import { EmptyState } from '../../../components/ui/EmptyState';
-import { useQuiz } from '../hooks/useStudy';
+import { useQuiz, useRecordQuizAttempt } from '../hooks/useStudy';
 import '../study.css';
 
 function ArrowLeftIcon() {
@@ -34,8 +34,10 @@ function getOptionText(question, letter) {
 export function QuizPage() {
   const { id } = useParams();
   const { data: quiz, isLoading, isError } = useQuiz(id);
+  const recordAttempt = useRecordQuizAttempt();
   const [answers, setAnswers] = useState({});
   const [submitted, setSubmitted] = useState(false);
+  const recordedRef = useRef(false);
 
   const questions = quiz?.questions ?? [];
 
@@ -54,6 +56,7 @@ export function QuizPage() {
   function handleRetry() {
     setAnswers({});
     setSubmitted(false);
+    recordedRef.current = false;
   }
 
   const score = submitted
@@ -62,6 +65,12 @@ export function QuizPage() {
   const total = questions.length;
   const percent = total > 0 ? Math.round((score / total) * 100) : 0;
   const allAnswered = questions.every((q) => answers[q.id]);
+
+  useEffect(() => {
+    if (!submitted || !id || recordedRef.current || total === 0) return;
+    recordedRef.current = true;
+    recordAttempt.mutate({ quizId: id, score, total });
+  }, [submitted, id, score, total, recordAttempt.mutate]);
 
   if (isLoading) {
     return (

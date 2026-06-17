@@ -38,3 +38,20 @@ export async function generateQuiz(request, response) {
   const result = await studyService.generateQuiz(request.user.id, request.body)
   response.status(result.existing ? 200 : 201).json({ success: true, data: result })
 }
+
+export async function recordFlashcardReview(request, response) {
+  const result = await studyService.recordFlashcardReview(
+    request.params.id,
+    request.user.id,
+  )
+  response.json({ success: true, data: result })
+}
+
+export async function recordQuizAttempt(request, response) {
+  const attempt = await studyService.recordQuizAttempt(
+    request.params.id,
+    request.user.id,
+    request.body,
+  )
+  response.status(201).json({ success: true, data: attempt })
+}

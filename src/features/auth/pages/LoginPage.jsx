@@ -1,13 +1,18 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../../context/useAuth'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
+import { useAuth } from '../../../context/useAuth';
+import { AuthLayout } from '../components/AuthLayout';
+import { LoginFormIcon } from '../components/AuthFormIcons';
+import '../auth.css';
 
 export function LoginPage() {
-  const { login } = useAuth()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [errorMessage, setErrorMessage] = useState('')
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [errorMessage, setErrorMessage] = useState('');
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
@@ -17,64 +22,55 @@ export function LoginPage() {
       email: '',
       password: '',
     },
-  })
+  });
 
   async function onSubmit(values) {
     try {
-      setErrorMessage('')
-      await login(values)
-      const destination = location.state?.from?.pathname ?? '/app'
-      navigate(destination, { replace: true })
+      setErrorMessage('');
+      await login(values);
+      const destination = location.state?.from?.pathname ?? '/app';
+      navigate(destination, { replace: true });
     } catch (error) {
-      setErrorMessage(error.message)
+      setErrorMessage(error.message);
     }
   }
 
   return (
-    <section className="auth-page">
-      <div className="auth-card">
-        <div className="auth-card__copy">
-          <h2 className="auth-card__title">Sign in</h2>
-        </div>
-
-        <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
-          <label className="field">
-            <span>Email</span>
-            <input
-              type="email"
-              placeholder="you@example.com"
-              {...register('email', { required: 'Email is required.' })}
-            />
-            {errors.email ? (
-              <small className="field__error">{errors.email.message}</small>
-            ) : null}
-          </label>
-
-          <label className="field">
-            <span>Password</span>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              {...register('password', {
-                required: 'Password is required.',
-              })}
-            />
-            {errors.password ? (
-              <small className="field__error">{errors.password.message}</small>
-            ) : null}
-          </label>
-
-          {errorMessage ? <p className="auth-form__error">{errorMessage}</p> : null}
-
-          <button className="button button--primary auth-form__submit" disabled={isSubmitting} type="submit">
-            {isSubmitting ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
-
-        <p className="auth-card__footer">
+    <AuthLayout
+      icon={LoginFormIcon}
+      title="Welcome back"
+      subtitle="Sign in to continue learning from your knowledge vault."
+      footer={
+        <>
           New here? <Link to="/register">Create an account</Link>
-        </p>
-      </div>
-    </section>
-  )
+        </>
+      }
+    >
+      <form className="auth-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <Input
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register('email', { required: 'Email is required.' })}
+        />
+
+        <Input
+          label="Password"
+          type="password"
+          placeholder="Enter your password"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          {...register('password', { required: 'Password is required.' })}
+        />
+
+        {errorMessage ? <p className="auth-form__error">{errorMessage}</p> : null}
+
+        <Button type="submit" variant="primary" size="lg" fullWidth isLoading={isSubmitting}>
+          {isSubmitting ? 'Signing in…' : 'Sign in'}
+        </Button>
+      </form>
+    </AuthLayout>
+  );
 }

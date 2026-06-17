@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Button } from '../../../components/ui/Button';
 import { Spinner } from '../../../components/ui/Spinner';
 import { EmptyState } from '../../../components/ui/EmptyState';
-import { useFlashcardDeck } from '../hooks/useStudy';
+import { useFlashcardDeck, useRecordFlashcardReview } from '../hooks/useStudy';
 import '../study.css';
 
 function ArrowLeftIcon() {
@@ -26,8 +26,10 @@ function CardsIcon() {
 export function FlashcardStudyPage() {
   const { id } = useParams();
   const { data: deck, isLoading, isError } = useFlashcardDeck(id);
+  const recordReview = useRecordFlashcardReview();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const recordedRef = useRef(false);
 
   const cards = deck?.flashcards ?? [];
   const currentCard = cards[currentIndex];
@@ -49,6 +51,14 @@ export function FlashcardStudyPage() {
   function handleFlip() {
     setFlipped((prev) => !prev);
   }
+
+  useEffect(() => {
+    if (!id || recordedRef.current || total === 0) return;
+    if (currentIndex === total - 1 && flipped) {
+      recordedRef.current = true;
+      recordReview.mutate(id);
+    }
+  }, [currentIndex, flipped, id, total, recordReview.mutate]);
 
   if (isLoading) {
     return (
