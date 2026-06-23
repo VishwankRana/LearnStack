@@ -1,6 +1,6 @@
 # LearnStack — Personal knowledge vault with AI study tools
 
-LearnStack (MindVault) is a full-stack web app for organizing notes, documents, and bookmarks in collections, then turning that content into AI-generated study guides, flashcards, and quizzes. The frontend is a React SPA; the backend is an Express REST API backed by PostgreSQL, with file storage on Supabase and AI requests routed through OpenRouter.
+LearnStack is a full-stack web app for organizing notes, documents, and bookmarks in collections, then turning that content into AI-generated study guides, flashcards, and quizzes. The frontend is a React SPA; the backend is an Express REST API backed by PostgreSQL, with file storage on Supabase and AI requests routed through OpenRouter.
 
 ---
 
